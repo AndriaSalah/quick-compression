@@ -118,8 +118,8 @@ export function FileListResults({
   if (files.length === 0) {
     return (
       <Card>
-        <CardContent className="p-6 text-center text-gray-500">
-          <File className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+        <CardContent className="p-6 text-center text-muted-foreground">
+          <File className="w-12 h-12 mx-auto mb-3 text-muted-foreground/50" />
           <p>No files selected yet</p>
           <p className="text-sm">Upload files to see them here</p>
         </CardContent>
@@ -185,20 +185,20 @@ export function FileListResults({
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-600">{pendingFiles.length}</p>
-              <p className="text-sm text-gray-600">Pending</p>
+              <p className="text-2xl font-bold text-blue-400">{pendingFiles.length}</p>
+              <p className="text-sm text-muted-foreground">Pending</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-600">{processingFiles.length}</p>
-              <p className="text-sm text-gray-600">Processing</p>
+              <p className="text-2xl font-bold text-yellow-400">{processingFiles.length}</p>
+              <p className="text-sm text-muted-foreground">Processing</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-600">{completedFiles.length}</p>
-              <p className="text-sm text-gray-600">Completed</p>
+              <p className="text-2xl font-bold text-green-400">{completedFiles.length}</p>
+              <p className="text-sm text-muted-foreground">Completed</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-600">{errorFiles.length}</p>
-              <p className="text-sm text-gray-600">Errors</p>
+              <p className="text-2xl font-bold text-red-400">{errorFiles.length}</p>
+              <p className="text-sm text-muted-foreground">Errors</p>
             </div>
           </div>
         </CardContent>
@@ -218,10 +218,10 @@ export function FileListResults({
                   <div className="flex items-center space-x-3">
                     {getFileIcon(fileResult.originalFile)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate" title={fileResult.originalFile.name}>
+                      <p className="text-sm font-medium text-foreground truncate" title={fileResult.originalFile.name}>
                         {fileResult.originalFile.name}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {formatFileSize(fileResult.originalSize)}
                       </p>
                     </div>
@@ -287,7 +287,7 @@ export function FileListResults({
                       variant="ghost"
                       onClick={() => onRemoveFile(fileResult.id)}
                       disabled={fileResult.status === 'compressing'}
-                      className="text-red-500 hover:text-red-700 p-1"
+                      className="text-red-400 hover:text-red-300 p-1"
                       title="Remove file"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -300,18 +300,18 @@ export function FileListResults({
                   <div className="mt-3 pt-3 border-t">
                     <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
-                        <p className="text-gray-600">Original</p>
+                        <p className="text-muted-foreground">Original</p>
                         <p className="font-medium">{formatFileSize(fileResult.originalSize)}</p>
                       </div>
                       <div>
-                        <p className="text-gray-600">Compressed</p>
-                        <p className="font-medium text-green-600">
+                        <p className="text-muted-foreground">Compressed</p>
+                        <p className="font-medium text-green-400">
                           {formatFileSize(fileResult.compressedSize)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600">Saved</p>
-                        <p className="font-medium text-blue-600">
+                        <p className="text-muted-foreground">Saved</p>
+                        <p className="font-medium text-blue-400">
                           {fileResult.compressionRatio?.toFixed(1)}%
                         </p>
                       </div>
@@ -320,9 +320,9 @@ export function FileListResults({
                     {/* Compression visualization */}
                     <div className="mt-3">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="text-xs text-gray-600">Compression:</span>
+                        <span className="text-xs text-muted-foreground">Compression:</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div className="w-full bg-muted/50 rounded-full h-2">
                         <div 
                           className="bg-green-500 h-2 rounded-full transition-all duration-1000"
                           style={{ 

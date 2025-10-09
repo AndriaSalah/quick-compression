@@ -33,12 +33,13 @@ export function getSmartDefaults(file: File, type: string): CompressionOptions {
       };
 
     case 'pdf':
-      // Adjust PDF quality based on file size
+      // More aggressive PDF compression defaults based on file size
       return {
-        pdfQuality: fileSizeMB > 50 ? 'screen' : fileSizeMB > 20 ? 'ebook' : 'printer',
+        pdfQuality: fileSizeMB > 50 ? 'screen' : fileSizeMB > 20 ? 'ebook' : fileSizeMB > 5 ? 'printer' : 'printer',
         pdfCompatibility: '1.4', // Maximum compatibility
         optimizeImages: true,
-        linearize: true // Optimize for web viewing
+        linearize: true, // Optimize for web viewing
+        removeMetadata: true // Always remove metadata for compression
       };
 
     default:

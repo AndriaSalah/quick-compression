@@ -1,6 +1,17 @@
 # 🗜️ Quick Compression - Developer Guide
 
-A modular, scalable file compression application built with Next.js, TypeScript, and FFmpeg. Supports audio, video, image, and PDF compression with real-time progress tracking.
+A modular, scalable file compression application built with Next.js, TypeScript, FFmpeg, and pdf-lib. Supports audio, video, image, and PDF compression with real-time progress tracking.
+
+## 🚀 **New: Real PDF Compression with pdf-lib**
+
+The application now includes **real PDF compression** using the pdf-lib library:
+- ✅ **Metadata removal** for privacy and size reduction
+- ✅ **Form flattening** to convert interactive forms to static content  
+- ✅ **Quality-based compression** (screen, ebook, printer, prepress)
+- ✅ **Object stream optimization** for better compression ratios
+- ✅ **Detailed logging** and error handling for PDF-specific issues
+- ✅ **Progress tracking** with real-time updates
+- ✅ **FileDropZone support** - PDFs can now be uploaded and compressed
 
 ## 📋 Table of Contents
 
@@ -28,10 +39,10 @@ A modular, scalable file compression application built with Next.js, TypeScript,
 ```
 useCompression (Main Orchestrator - 96 lines)
 ├── useFFmpeg (Shared FFmpeg Instance - 140 lines)
-├── useAudioCompression (67 lines)
-├── useVideoCompression (69 lines)
-├── useImageCompression (72 lines)
-└── usePdfCompression (78 lines)
+├── useAudioCompression (67 lines) - FFmpeg-based
+├── useVideoCompression (69 lines) - FFmpeg-based  
+├── useImageCompression (72 lines) - Canvas API-based
+└── usePdfCompression (78 lines) - pdf-lib-based ⭐ NEW
 ```
 
 ### State Management
