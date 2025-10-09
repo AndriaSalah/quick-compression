@@ -18,7 +18,8 @@ import {
   Download,
   Loader2,
   CheckCircle2,
-  Clock
+  Clock,
+  Coffee
 } from 'lucide-react';
 
 import { FileDropZone } from '@/components/FileDropZone';
@@ -308,7 +309,14 @@ export default function HomePage() {
                     <Github className="w-4 h-4 mr-2" />
                     Source code
                   </Button>
-                  <iframe src="https://github.com/sponsors/AndriaSalah/button" title="Sponsor AndriaSalah" height="32" width="114" style={{border: 0,borderRadius: '6px'}}></iframe>
+                  <Button 
+                    variant="outline" 
+                    className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800"
+                    onClick={() => window.open('https://github.com/sponsors/AndriaSalah?o=esb', '_blank')}
+                  >
+                    <Coffee className="w-4 h-4 mr-2" />
+                    Support this project
+                  </Button>
                 </div>
 
                 <div className="mt-6 flex items-center text-gray-500 text-sm">

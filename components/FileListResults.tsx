@@ -137,22 +137,24 @@ export function FileListResults({
           </CardTitle>
           
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-3 mt-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-2 sm:gap-3 mt-4">
             <Button
               onClick={onCompressAll}
               disabled={pendingFiles.length === 0 || isProcessing}
-              className="flex items-center space-x-2"
+              className="flex items-center justify-center space-x-2 flex-1 sm:flex-none p-2"
               size="sm"
             >
               {isProcessing ? (
                 <>
                   <Pause className="w-4 h-4" />
-                  <span>Processing...</span>
+                  <span className="hidden sm:inline">Processing...</span>
+                  <span className="sm:hidden">Processing</span>
                 </>
               ) : (
                 <>
                   <Play className="w-4 h-4" />
-                  <span>Compress All ({pendingFiles.length})</span>
+                  <span className="hidden sm:inline">Compress All ({pendingFiles.length})</span>
+                  <span className="sm:hidden">Compress ({pendingFiles.length})</span>
                 </>
               )}
             </Button>
@@ -163,10 +165,11 @@ export function FileListResults({
                 variant="outline"
                 size="sm"
                 disabled={isProcessing}
-                className="flex items-center space-x-2"
+                className="flex items-center justify-center space-x-2 flex-1 sm:flex-none p-2"
               >
                 <Download className="w-4 h-4" />
-                <span>Download All ({completedFiles.length})</span>
+                <span className="hidden sm:inline">Download All ({completedFiles.length})</span>
+                <span className="sm:hidden">Download ({completedFiles.length})</span>
               </Button>
             )}
 
@@ -175,7 +178,7 @@ export function FileListResults({
               variant="ghost"
               size="sm"
               disabled={isProcessing}
-              className="flex items-center space-x-2"
+              className="flex items-center justify-center space-x-2 flex-1 sm:flex-none p-2"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Clear All</span>
@@ -183,22 +186,22 @@ export function FileListResults({
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-blue-400">{pendingFiles.length}</p>
-              <p className="text-sm text-muted-foreground">Pending</p>
+              <p className="text-xl sm:text-2xl font-bold text-blue-400">{pendingFiles.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Pending</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-yellow-400">{processingFiles.length}</p>
-              <p className="text-sm text-muted-foreground">Processing</p>
+              <p className="text-xl sm:text-2xl font-bold text-yellow-400">{processingFiles.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Processing</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-green-400">{completedFiles.length}</p>
-              <p className="text-sm text-muted-foreground">Completed</p>
+              <p className="text-xl sm:text-2xl font-bold text-green-400">{completedFiles.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Completed</p>
             </div>
             <div className="text-center">
-              <p className="text-2xl font-bold text-red-400">{errorFiles.length}</p>
-              <p className="text-sm text-muted-foreground">Errors</p>
+              <p className="text-xl sm:text-2xl font-bold text-red-400">{errorFiles.length}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">Errors</p>
             </div>
           </div>
         </CardContent>
@@ -210,15 +213,15 @@ export function FileListResults({
           <CardTitle>Files</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 max-h-96 overflow-y-auto">
+          <div className="space-y-3 max-h-80 sm:max-h-96 overflow-y-auto">
             {files.map((fileResult) => (
-              <div key={fileResult.id} className="border rounded-lg p-3">
-                <div className="space-y-3">
+              <div key={fileResult.id} className="border rounded-lg p-2 sm:p-3">
+                <div className="space-y-2 sm:space-y-3">
                   {/* File Info Row */}
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 sm:space-x-3">
                     {getFileIcon(fileResult.originalFile)}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate" title={fileResult.originalFile.name}>
+                      <p className="text-xs sm:text-sm font-medium text-foreground truncate" title={fileResult.originalFile.name}>
                         {fileResult.originalFile.name}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -231,17 +234,17 @@ export function FileListResults({
                   </div>
 
                   {/* Action Buttons Row */}
-                  <div className="flex items-center justify-between border-t pt-3">
-                    <div className="flex items-center flex-wrap gap-2 space-x-2">
+                  <div className="flex items-center justify-between border-t pt-2 sm:pt-3">
+                    <div className="flex items-center flex-wrap gap-1 sm:gap-2">
                       {fileResult.status === 'pending' && (
                         <Button
                           size="sm"
                           onClick={() => onCompressFile(fileResult.id)}
                           disabled={isProcessing}
-                          className="flex items-center space-x-1"
+                          className="flex items-center space-x-1 text-xs sm:text-sm px-2 sm:px-3"
                         >
                           <Play className="w-3 h-3" />
-                          <span>Compress</span>
+                          <span className="hidden sm:inline">Compress</span>
                         </Button>
                       )}
 
@@ -250,20 +253,20 @@ export function FileListResults({
                           <Button
                             size="sm"
                             onClick={() => onDownloadFile(fileResult.id)}
-                            className="flex items-center space-x-1"
+                            className="flex items-center space-x-1 text-xs sm:text-sm px-2 sm:px-3"
                           >
                             <Download className="w-3 h-3" />
-                            <span>Download</span>
+                            <span className="hidden sm:inline">Download</span>
                           </Button>
                           <Button
                             size="sm"
                             variant="outline"
                             onClick={() => onRecompressFile(fileResult.id)}
                             disabled={isProcessing}
-                            className="flex items-center space-x-1"
+                            className="flex items-center space-x-1 text-xs sm:text-sm px-2 sm:px-3"
                           >
                             <RotateCcw className="w-3 h-3" />
-                            <span>Recompress</span>
+                            <span className="hidden sm:inline">Recompress</span>
                           </Button>
                         </>
                       )}
@@ -274,10 +277,10 @@ export function FileListResults({
                           variant="outline"
                           onClick={() => onRetryFile(fileResult.id)}
                           disabled={isProcessing}
-                          className="flex items-center space-x-1"
+                          className="flex items-center space-x-1 text-xs sm:text-sm px-2 sm:px-3"
                         >
                           <RotateCcw className="w-3 h-3" />
-                          <span>Retry</span>
+                          <span className="hidden sm:inline">Retry</span>
                         </Button>
                       )}
                     </div>
@@ -297,34 +300,34 @@ export function FileListResults({
 
                 {/* Expanded Details */}
                 {fileResult.status === 'completed' && fileResult.compressedSize && (
-                  <div className="mt-3 pt-3 border-t">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t">
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
                       <div>
                         <p className="text-muted-foreground">Original</p>
-                        <p className="font-medium">{formatFileSize(fileResult.originalSize)}</p>
+                        <p className="font-medium text-xs sm:text-sm">{formatFileSize(fileResult.originalSize)}</p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Compressed</p>
-                        <p className="font-medium text-green-400">
+                        <p className="font-medium text-green-400 text-xs sm:text-sm">
                           {formatFileSize(fileResult.compressedSize)}
                         </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Saved</p>
-                        <p className="font-medium text-blue-400">
+                        <p className="font-medium text-blue-400 text-xs sm:text-sm">
                           {fileResult.compressionRatio?.toFixed(1)}%
                         </p>
                       </div>
                     </div>
 
                     {/* Compression visualization */}
-                    <div className="mt-3">
+                    <div className="mt-2 sm:mt-3">
                       <div className="flex items-center space-x-2 mb-1">
                         <span className="text-xs text-muted-foreground">Compression:</span>
                       </div>
-                      <div className="w-full bg-muted/50 rounded-full h-2">
+                      <div className="w-full bg-muted/50 rounded-full h-1.5 sm:h-2">
                         <div 
-                          className="bg-green-500 h-2 rounded-full transition-all duration-1000"
+                          className="bg-green-500 h-1.5 sm:h-2 rounded-full transition-all duration-1000"
                           style={{ 
                             width: `${100 - (fileResult.compressionRatio || 0)}%` 
                           }}
@@ -336,7 +339,7 @@ export function FileListResults({
 
                 {/* Error Details */}
                 {fileResult.status === 'error' && fileResult.error && (
-                  <Alert variant="destructive" className="mt-3">
+                  <Alert variant="destructive" className="mt-2 sm:mt-3">
                     <AlertDescription className="text-xs">
                       {fileResult.error}
                     </AlertDescription>
