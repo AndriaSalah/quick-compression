@@ -253,7 +253,7 @@ export default function HomePage() {
                 <p className="text-sm text-gray-300">Compress images, videos & audio files instantly</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="hidden md:flex items-center space-x-4 ">
               <Badge variant="outline" className="flex items-center space-x-1 bg-gray-700/50 text-gray-300 border-gray-600">
                 <Shield className="w-3 h-3" />
                 <span>Privacy First</span>
@@ -284,7 +284,7 @@ export default function HomePage() {
                   A simple, privacy-focused tool for compressing your files. Built by a frontend developer who believes in keeping things straightforward and user-friendly.
                 </p>
                 
-                <div className="flex items-center space-x-6 mb-6">
+                <div className="flex flex-wrap items-center space-x-6 mb-6">
                   <div className="flex items-center space-x-2 text-green-400">
                     <div className="w-2 h-2 bg-green-400 rounded-full"></div>
                     <span className="text-sm">Process locally</span>
@@ -299,7 +299,7 @@ export default function HomePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center flex-wrap gap-4 space-x-4">
                   <Button 
                     variant="outline" 
                     className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800"

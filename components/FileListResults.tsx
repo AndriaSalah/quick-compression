@@ -232,7 +232,7 @@ export function FileListResults({
 
                   {/* Action Buttons Row */}
                   <div className="flex items-center justify-between border-t pt-3">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center flex-wrap gap-2 space-x-2">
                       {fileResult.status === 'pending' && (
                         <Button
                           size="sm"
@@ -298,7 +298,7 @@ export function FileListResults({
                 {/* Expanded Details */}
                 {fileResult.status === 'completed' && fileResult.compressedSize && (
                   <div className="mt-3 pt-3 border-t">
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Original</p>
                         <p className="font-medium">{formatFileSize(fileResult.originalSize)}</p>
