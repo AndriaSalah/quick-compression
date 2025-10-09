@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { useCompressionStore } from '@/store/compression-store';
-import { useCompression } from '@/libs/useCompression';
+import { useCompression } from '@/lib/useCompression';
 
 export const useFFmpegEngine = () => {
   const {

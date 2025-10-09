@@ -2,10 +2,11 @@
 
 import { useCallback } from 'react';
 import { CompressionOptions } from '@/types';
-import { formatFileSizeMB, calculateCompressionStats } from '@/utils/compression-helpers';
-import { getSmartDefaults } from '@/utils/compression-defaults';
-import { buildVideoArgs, generateFFmpegFileNames, getOutputMimeType } from '@/utils/ffmpeg-args-builder';
+import { formatFileSizeMB, calculateCompressionStats } from '@/lib/utils/compression-helpers';
+import { getSmartDefaults } from '@/lib/utils/compression-defaults';
+import { buildVideoArgs, generateFFmpegFileNames, getOutputMimeType } from '@/lib/utils/ffmpeg-args-builder';
 import { useFFmpeg } from './useFFmpeg';
+import { getThreadConfigInfo } from './threadUtils';
 
 export const useVideoCompression = (defaultOptions: CompressionOptions = {}) => {
   const {
@@ -27,10 +28,14 @@ export const useVideoCompression = (defaultOptions: CompressionOptions = {}) => 
       const ffmpegInstance = await initializeFFmpeg();
       const { fetchFile: fetchFileUtil } = await getFFmpegUtils();
 
-      const options = {
-        ...getSmartDefaults(file, 'video'),
+      const mergedOptions = {
         ...defaultOptions,
         ...customOptions
+      };
+
+      const options = {
+        ...getSmartDefaults(file, 'video', mergedOptions),
+        ...mergedOptions
       };
 
       const outputFormat = options.outputFormat || 'mp4';
@@ -43,7 +48,8 @@ export const useVideoCompression = (defaultOptions: CompressionOptions = {}) => 
       // Build compression arguments
       const args = buildVideoArgs(options, inputFileName, outputFileName);
 
-      console.log('Video compression args:', args);
+      console.log('Video compression args (with multithreading):', args);
+      console.log('Thread config:', getThreadConfigInfo());
 
       // Reset progress to 0 before starting
       setCompressionProgress(0);

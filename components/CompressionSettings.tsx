@@ -96,46 +96,8 @@ export function CompressionSettings({ options, onOptionsChange, selectedFiles }:
           </TabsContent>
 
           <TabsContent value="advanced" className="space-y-6 mt-4">
-            {/* Output Format Selection */}
-            <div className="space-y-4">
-              <Label className="text-base font-medium">Output Format</Label>
-              <Select
-                value={options.outputFormat || 'auto'}
-                onValueChange={(value) => updateOption('outputFormat', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select output format" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="auto">Auto (Keep original format)</SelectItem>
-                  {hasImages && (
-                    <>
-                      <SelectItem value="jpeg">JPEG</SelectItem>
-                      <SelectItem value="png">PNG</SelectItem>
-                      <SelectItem value="webp">WebP</SelectItem>
-                    </>
-                  )}
-                  {hasVideos && (
-                    <>
-                      <SelectItem value="mp4">MP4</SelectItem>
-                      <SelectItem value="webm">WebM</SelectItem>
-                      <SelectItem value="avi">AVI</SelectItem>
-                    </>
-                  )}
-                  {hasAudio && (
-                    <>
-                      <SelectItem value="mp3">MP3</SelectItem>
-                      <SelectItem value="aac">AAC</SelectItem>
-                      <SelectItem value="opus">Opus</SelectItem>
-                      <SelectItem value="ogg">OGG</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-
             {/* File Type Specific Settings */}
-             {/* Custom FFmpeg Arguments (only for video/audio) */}
+            {/* Custom FFmpeg Arguments (only for video/audio) */}
             {(hasVideos || hasAudio) && (
               <CustomArgs options={options} onOptionsChange={onOptionsChange} />
             )}

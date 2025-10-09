@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { useFileStore } from '@/store/file-store';
 import { useCompressionStore } from '@/store/compression-store';
 import { useSettingsStore } from '@/store/settings-store';
-import { useCompression } from '@/libs/useCompression';
+import { useCompression } from '@/lib/useCompression';
 import { formatFileSize } from '@/utils/components/file-list-results';
 import { FileResult } from '@/types';
 

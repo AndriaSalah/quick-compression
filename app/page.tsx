@@ -308,9 +308,7 @@ export default function HomePage() {
                     <Github className="w-4 h-4 mr-2" />
                     Source code
                   </Button>
-                  <Button variant="outline" className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800">
-                    Support this project
-                  </Button>
+                  <iframe src="https://github.com/sponsors/AndriaSalah/button" title="Sponsor AndriaSalah" height="32" width="114" style={{border: 0,borderRadius: '6px'}}></iframe>
                 </div>
 
                 <div className="mt-6 flex items-center text-gray-500 text-sm">

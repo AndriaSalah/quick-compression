@@ -31,7 +31,7 @@ export function CurrentCompressionProgress({
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center space-x-2 text-lg">
-          <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+          <Loader2 className="w-5 h-5 animate-spin text-blue-500 shrink-0" />
           <span>Compressing{currentFile ? `: ${currentFile}` : '...'}</span>
         </CardTitle>
       </CardHeader>

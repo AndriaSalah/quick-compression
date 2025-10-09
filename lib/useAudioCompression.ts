@@ -2,10 +2,11 @@
 
 import { useCallback } from 'react';
 import { CompressionOptions } from '@/types';
-import { formatFileSizeMB, calculateCompressionStats } from '@/utils/compression-helpers';
-import { getSmartDefaults } from '@/utils/compression-defaults';
-import { buildAudioArgs, generateFFmpegFileNames, getOutputMimeType } from '@/utils/ffmpeg-args-builder';
+import { formatFileSizeMB, calculateCompressionStats } from '@/lib/utils/compression-helpers';
+import { getSmartDefaults } from '@/lib/utils/compression-defaults';
+import { buildAudioArgs, generateFFmpegFileNames, getOutputMimeType } from '@/lib/utils/ffmpeg-args-builder';
 import { useFFmpeg } from './useFFmpeg';
+import { getThreadConfigInfo } from './threadUtils';
 
 export const useAudioCompression = (defaultOptions: CompressionOptions = {}) => {
   const {
@@ -27,10 +28,14 @@ export const useAudioCompression = (defaultOptions: CompressionOptions = {}) => 
       const { fetchFile: fetchFileUtil } = await getFFmpegUtils();
 
       // Merge options with smart defaults
-      const options = {
-        ...getSmartDefaults(file, 'audio'),
+      const mergedOptions = {
         ...defaultOptions,
         ...customOptions
+      };
+
+      const options = {
+        ...getSmartDefaults(file, 'audio', mergedOptions),
+        ...mergedOptions
       };
 
       const outputFormat = options.outputFormat || 'mp3';
@@ -44,7 +49,8 @@ export const useAudioCompression = (defaultOptions: CompressionOptions = {}) => 
       // Build compression arguments
       const args = buildAudioArgs(options, inputFileName, outputFileName);
 
-      console.log('Audio compression args:', args);
+      console.log('Audio compression args (with multithreading):', args);
+      console.log('Thread config:', getThreadConfigInfo());
       
       // Reset progress to 0 before starting
       setCompressionProgress(0);
