@@ -239,26 +239,26 @@ export default function HomePage() {
   const completedFiles = getCompletedFiles();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-black">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b sticky top-0 z-10">
+      <header className="bg-black/80 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
+              <div className="p-2 bg-[#262626] rounded-lg">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Quick Compression</h1>
-                <p className="text-sm text-gray-600">Compress images, videos & audio files instantly</p>
+                <h1 className="text-2xl font-bold text-white">Quick Compression</h1>
+                <p className="text-sm text-gray-300">Compress images, videos & audio files instantly</p>
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="flex items-center space-x-1">
+              <Badge variant="outline" className="flex items-center space-x-1 bg-gray-700/50 text-gray-300 border-gray-600">
                 <Shield className="w-3 h-3" />
                 <span>Privacy First</span>
               </Badge>
-              <Badge variant="outline" className="flex items-center space-x-1">
+              <Badge variant="outline" className="flex items-center space-x-1 bg-gray-700/50 text-gray-300 border-gray-600">
                 <Globe className="w-3 h-3" />
                 <span>No Upload</span>
               </Badge>
@@ -275,49 +275,47 @@ export default function HomePage() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Hero Section */}
-            <Card className="border-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+            <Card className="border border-gray-800 bg-[#171717] text-white">
               <CardContent className="p-8">
-                <h2 className="text-3xl font-bold mb-4">
-                  Compress Files Instantly
+                <h2 className="text-3xl font-bold mb-4 text-white">
+                  Quick Compression
                 </h2>
-                <p className="text-blue-100 mb-6 text-lg">
-                  Reduce file sizes by up to 90% without losing quality. 
-                  All processing happens in your browser - no uploads required.
+                <p className="text-gray-400 mb-6 text-base">
+                  A simple, privacy-focused tool for compressing your files. Built by a frontend developer who believes in keeping things straightforward and user-friendly.
                 </p>
-                <div className="flex flex-wrap gap-3 mb-6">
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                    ✨ Client-side Processing
-                  </Badge>
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                    🔒 100% Private
-                  </Badge>
-                  <Badge variant="secondary" className="bg-white/20 text-white border-white/30">
-                    ⚡ Lightning Fast
-                  </Badge>
+                
+                <div className="flex items-center space-x-6 mb-6">
+                  <div className="flex items-center space-x-2 text-green-400">
+                    <div className="w-2 h-2 bg-green-400 rounded-full"></div>
+                    <span className="text-sm">Process locally</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-blue-400">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                    <span className="text-sm">No data uploaded</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-gray-400">
+                    <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                    <span className="text-sm">Open source</span>
+                  </div>
                 </div>
 
-                {/* Engine Status in Hero */}
                 <div className="flex items-center space-x-4">
-                  {isFFmpegLoading && (
-                    <div className="flex items-center space-x-3 text-white">
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>Loading compression engine...</span>
-                    </div>
-                  )}
+                  <Button 
+                    variant="outline" 
+                    className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800"
+                    onClick={() => window.open('https://github.com/AndriaSalah/quick-compression', '_blank')}
+                  >
+                    <Github className="w-4 h-4 mr-2" />
+                    Source code
+                  </Button>
+                  <Button variant="outline" className="bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800">
+                    Support this project
+                  </Button>
+                </div>
 
-                  {isFFmpegLoaded && (
-                    <div className="flex items-center space-x-3 text-white">
-                      <CheckCircle2 className="w-5 h-5" />
-                      <span>Compression engine ready!</span>
-                    </div>
-                  )}
-
-                  {!isFFmpegLoaded && !isFFmpegLoading && (
-                    <div className="flex items-center space-x-3 text-white/80">
-                      <Clock className="w-5 h-5" />
-                      <span>Engine will auto-download for video/audio compression</span>
-                    </div>
-                  )}
+                <div className="mt-6 flex items-center text-gray-500 text-sm">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span>Engine loads automatically when needed</span>
                 </div>
               </CardContent>
             </Card>
@@ -376,8 +374,8 @@ export default function HomePage() {
         </div>
 
         {/* Footer */}
-        <footer className="mt-16 py-8 border-t">
-          <div className="text-center text-gray-600">
+        <footer className="mt-16 py-8 border-t border-gray-700">
+          <div className="text-center text-gray-400">
             <p className="mb-4">
               Built with ❤️ using Next.js, FFmpeg WASM, and shadcn/ui
             </p>

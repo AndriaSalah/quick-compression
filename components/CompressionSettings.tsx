@@ -8,14 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Settings } from 'lucide-react';
 import { CompressionOptions } from '@/types';
 import { getSmartDefaults } from '@/utils/compression-defaults';
-import { 
-  SmartPresets, 
-  ImageSettings, 
-  VideoSettings, 
-  AudioSettings, 
-  PdfSettings, 
-  CustomArgs 
-} from './settings';
+import { SmartPresets } from './settings/SmartPresets';
+import { ImageSettings } from './settings/ImageSettings';
+import { VideoSettings } from './settings/VideoSettings';
+import { AudioSettings } from './settings/AudioSettings';
+import { PdfSettings } from './settings/PdfSettings';
+import { CustomArgs } from './settings/CustomArgs';
+
 
 interface CompressionSettingsProps {
   options: CompressionOptions;
@@ -136,6 +135,10 @@ export function CompressionSettings({ options, onOptionsChange, selectedFiles }:
             </div>
 
             {/* File Type Specific Settings */}
+             {/* Custom FFmpeg Arguments (only for video/audio) */}
+            {(hasVideos || hasAudio) && (
+              <CustomArgs options={options} onOptionsChange={onOptionsChange} />
+            )}
             {hasImages && (
               <ImageSettings options={options} onOptionsChange={onOptionsChange} />
             )}
@@ -151,12 +154,6 @@ export function CompressionSettings({ options, onOptionsChange, selectedFiles }:
             {hasPdfs && (
               <PdfSettings options={options} onOptionsChange={onOptionsChange} />
             )}
-
-            {/* Custom FFmpeg Arguments (only for video/audio) */}
-            {(hasVideos || hasAudio) && (
-              <CustomArgs options={options} onOptionsChange={onOptionsChange} />
-            )}
-
             {/* No file type selected message */}
             {!hasImages && !hasAudio && !hasVideos && !hasPdfs && (
               <div className="text-center py-8 text-gray-500">
