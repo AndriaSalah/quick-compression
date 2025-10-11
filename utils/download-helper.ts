@@ -6,16 +6,64 @@ import { FileResult } from '@/types';
  * @param blob - The compressed file blob
  * @param originalFileName - The original filename
  * @param suffix - The suffix to add to the filename (default: 'compressed')
+ * @param outputFormat - Optional output format override
  */
-export function downloadSingleFile(blob: Blob, originalFileName: string, suffix = 'compressed'): void {
+export function downloadSingleFile(
+  blob: Blob, 
+  originalFileName: string, 
+  suffix = 'compressed',
+  outputFormat?: string
+): void {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = generateFileName(originalFileName, suffix);
+  
+  // Determine output format from blob MIME type if not provided
+  const detectedFormat = outputFormat || detectFormatFromMimeType(blob.type);
+  
+  a.download = generateFileName(originalFileName, suffix, detectedFormat);
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+/**
+ * Detects output format from MIME type
+ * @param mimeType - The blob's MIME type
+ * @returns The detected format or undefined
+ */
+function detectFormatFromMimeType(mimeType: string): string | undefined {
+  switch (mimeType) {
+    // Audio
+    case 'audio/mp3':
+    case 'audio/mpeg': return 'mp3';
+    case 'audio/ogg': return 'ogg';
+    case 'audio/wav': return 'wav';
+    case 'audio/aac': return 'aac';
+    case 'audio/x-m4a': return 'm4a';
+    case 'audio/flac': return 'flac';
+    
+    // Video
+    case 'video/mp4': return 'mp4';
+    case 'video/webm': return 'webm';
+    case 'video/x-matroska': return 'mkv';
+    case 'video/x-msvideo': return 'avi';
+    case 'video/quicktime': return 'mov';
+    
+    // Image
+    case 'image/jpeg': return 'jpeg';
+    case 'image/png': return 'png';
+    case 'image/webp': return 'webp';
+    case 'image/avif': return 'avif';
+    case 'image/bmp': return 'bmp';
+    case 'image/tiff': return 'tiff';
+    
+    // PDF
+    case 'application/pdf': return 'pdf';
+    
+    default: return undefined;
+  }
 }
 
 /**
