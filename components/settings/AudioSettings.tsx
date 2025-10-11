@@ -28,7 +28,7 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
       </div>
 
       {/* Audio Codec */}
-      {/* <div className="space-y-2">
+      <div className="space-y-2">
         <Label>Audio Codec</Label>
         <Select
           value={options.acodec || 'aac'}
@@ -40,11 +40,10 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
           <SelectContent>
             <SelectItem value="aac">AAC (Best compatibility)</SelectItem>
             <SelectItem value="mp3">MP3 (Universal)</SelectItem>
-            <SelectItem value="opus">Opus (Best quality/size ratio)</SelectItem>
-            <SelectItem value="vorbis">Vorbis (Open source)</SelectItem>
+            <SelectItem value="opus">Opus / Vorbis</SelectItem>
           </SelectContent>
         </Select>
-      </div> */}
+      </div>
 
       {/* Bitrate */}
       <div className="space-y-2">

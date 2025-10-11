@@ -41,7 +41,7 @@ export type AudioCompressionOptions = Omit<CompressionOptions,
 >;
 
 export type VideoCompressionOptions = Omit<CompressionOptions,  
-  'sampleRate' | 'channels' | 'acodec' |
+  'channels' | 'acodec' |
   'imageQuality' |
   'pdfQuality' | 'pdfCompatibility' | 'grayscale' | 'optimizeImages' | 'linearize' | 
   'removeMetadata'

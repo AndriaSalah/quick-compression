@@ -27,9 +27,6 @@ export const useImageCompression = () => {
 
     try {
       
-
-      console.log('Starting image compression...');
-
       return new Promise((resolve, reject) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -64,7 +61,6 @@ export const useImageCompression = () => {
             if (blob) {
               // Track stats
               const stats = calculateCompressionStats(file.size, blob.size);
-              console.log(`Image compression complete: ${formatFileSizeMB(file.size)} → ${formatFileSizeMB(blob.size)} (${stats.compressionRatio.toFixed(1)}% smaller)`);
               
               setCompressionProgress(100);
               
@@ -87,7 +83,7 @@ export const useImageCompression = () => {
       });
 
     } catch (err) {
-      const errorMessage = `Image compression failed: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      const errorMessage = `Image compression failed: ${err instanceof Error ? err.message : err}}`;
       throw new Error(errorMessage);
     }
   }, [imageOptions, setCompressionProgress, clearError]);

@@ -218,9 +218,9 @@ export function FileListResults({
               <div key={fileResult.id} className="border rounded-lg p-2 sm:p-3">
                 <div className="space-y-2 sm:space-y-3">
                   {/* File Info Row */}
-                  <div className="flex items-center space-x-2 sm:space-x-3">
+                  <div className="flex items-center flex-col sm:flex-row space-y-2 space-x-2 sm:space-x-3">
                     {getFileIcon(fileResult.originalFile)}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 max-w-full min-w-0 text-center sm:text-start">
                       <p className="text-xs sm:text-sm font-medium text-foreground truncate" title={fileResult.originalFile.name}>
                         {fileResult.originalFile.name}
                       </p>

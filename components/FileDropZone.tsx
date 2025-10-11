@@ -69,7 +69,6 @@ export function FileDropZone({ onFilesSelected, onRemoveFile, selectedFiles, isP
       'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp'],
       'video/*': ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv'],
       'audio/*': ['.mp3', '.wav', '.aac', '.ogg', '.m4a', '.wma', '.flac'],
-      'application/pdf': ['.pdf'],
     },
     disabled: isProcessing,
     onDrop: (acceptedFiles) => {
@@ -115,7 +114,7 @@ export function FileDropZone({ onFilesSelected, onRemoveFile, selectedFiles, isP
                 Drag & drop files here, or click to select
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                Supports: Images (PNG, JPG, GIF), Videos (MP4, AVI, MOV), Audio (MP3, WAV, AAC), PDFs
+                Supports: Images (PNG, JPG, GIF), Videos (MP4, AVI, MOV), Audio (MP3, WAV, AAC)
               </p>
             </div>
           )}

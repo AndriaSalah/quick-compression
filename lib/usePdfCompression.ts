@@ -24,8 +24,6 @@ export const usePdfCompression = () => {
       // Use PDF options from store
       const options = pdfOptions;
 
-      console.log('Starting PDF compression with pdf-lib...', { fileName: file.name, options });
-
       setCompressionProgress(10);
       
       // Read the PDF file as array buffer
@@ -65,7 +63,7 @@ export const usePdfCompression = () => {
         // Always flatten forms to reduce file size (forms become non-interactive)
         try {
           form.flatten();
-          console.log('PDF forms flattened for better compression');
+          // console.log('PDF forms flattened for better compression');
         } catch (error) {
           console.warn('Could not flatten PDF forms:', error);
         }
@@ -75,11 +73,9 @@ export const usePdfCompression = () => {
       try {
         // Get all pages for optimization
         const pages = pdfDoc.getPages();
-        console.log(`Optimizing ${pages.length} pages for compression`);
         
         // Optimize each page for smaller size
         if (options.optimizeImages !== false) {
-          console.log('Applying page content optimization...');
           
           // For each page, optimize content and remove unnecessary elements
           for (let i = 0; i < pages.length; i++) {
@@ -92,28 +88,25 @@ export const usePdfCompression = () => {
               const annotsKey = PDFName.of('Annots');
               if (pageDict.has(annotsKey)) {
                 pageDict.delete(annotsKey);
-                console.log(`Removed annotations from page ${i + 1}`);
               }
               
               // Remove structural parent tree (accessibility data) to reduce size
               const structParentsKey = PDFName.of('StructParents');
               if (pageDict.has(structParentsKey)) {
                 pageDict.delete(structParentsKey);
-                console.log(`Removed structure data from page ${i + 1}`);
               }
               
               // Remove page transitions
               const transKey = PDFName.of('Trans');
               if (pageDict.has(transKey)) {
                 pageDict.delete(transKey);
-                console.log(`Removed transitions from page ${i + 1}`);
               }
               
               // Remove thumbnails
               const thumbKey = PDFName.of('Thumb');
               if (pageDict.has(thumbKey)) {
                 pageDict.delete(thumbKey);
-                console.log(`Removed thumbnail from page ${i + 1}`);
+                // console.log(`Removed thumbnail from page ${i + 1}`);
               }
               
             } catch (error) {
@@ -122,17 +115,6 @@ export const usePdfCompression = () => {
           }
         }
         
-        // Remove document-level optional content for smaller size
-        try {
-          // Try to remove optional content but don't fail if we can't access it
-          console.log('Attempting to remove optional document elements for compression...');
-          
-          // The main compression will come from the save options and content optimization
-          // Additional optimizations are limited by pdf-lib's API access
-          
-        } catch (error) {
-          console.warn('Could not optimize document catalog:', error);
-        }
         
       } catch (error) {
         console.warn('Could not perform page optimization:', error);
@@ -140,7 +122,7 @@ export const usePdfCompression = () => {
       
       // Additional image downsampling for screen/ebook quality
       if (options.pdfQuality === 'screen' || options.pdfQuality === 'ebook') {
-        console.log('Applying image downsampling for better compression...');
+        // console.log('Applying image downsampling for better compression...');
         
         try {
           const pages = pdfDoc.getPages();
@@ -156,7 +138,7 @@ export const usePdfCompression = () => {
               const scale = Math.min(maxDimension / width, maxDimension / height);
               
               if (scale < 0.9) { // Only scale if significant reduction
-                console.log(`Downsampling page ${i + 1}: ${width}x${height} -> ${Math.round(width * scale)}x${Math.round(height * scale)}`);
+                // console.log(`Downsampling page ${i + 1}: ${width}x${height} -> ${Math.round(width * scale)}x${Math.round(height * scale)}`);
                 
                 // Note: pdf-lib doesn't provide direct image downsampling
                 // The compression will mainly come from object stream compression
@@ -221,17 +203,11 @@ export const usePdfCompression = () => {
         saveOptions.objectStreamsThreshold = 5;
       }
       
-      // Linearization for faster web viewing
-      if (options.linearize !== false) {
-        // Note: pdf-lib doesn't support linearization directly
-        // This would require additional processing
-        console.log('Linearization requested but not supported by pdf-lib');
-      }
       
       setCompressionProgress(70);
       
       // Save the optimized PDF
-      console.log('Saving compressed PDF with options:', saveOptions);
+      // console.log('Saving compressed PDF with options:', saveOptions);
       const compressedPdfBytes = await pdfDoc.save(saveOptions);
       
       setCompressionProgress(90);
@@ -239,20 +215,6 @@ export const usePdfCompression = () => {
       // Create the compressed blob - create a new Uint8Array to ensure proper typing
       const uint8Array = new Uint8Array(compressedPdfBytes);
       const compressedBlob = new Blob([uint8Array], { type: 'application/pdf' });
-
-      // Calculate compression stats
-      const stats = calculateCompressionStats(file.size, compressedBlob.size);
-      
-      // Calculate compression ratio
-      const compressionRatio = ((file.size - compressedBlob.size) / file.size) * 100;
-      const sizeReduction = file.size - compressedBlob.size;
-
-      console.log(`PDF compression complete:`);
-      console.log(`  Original: ${formatFileSizeMB(file.size)} (${file.size} bytes)`);
-      console.log(`  Compressed: ${formatFileSizeMB(compressedBlob.size)} (${compressedBlob.size} bytes)`);
-      console.log(`  Reduction: ${formatFileSizeMB(sizeReduction)} (${compressionRatio.toFixed(1)}%)`);
-      console.log(`  Pages: ${pdfDoc.getPageCount()}`);
-      console.log(`  Quality setting: ${options.pdfQuality || 'default'}`);
 
       // Set progress to 100% when complete
       setCompressionProgress(100);

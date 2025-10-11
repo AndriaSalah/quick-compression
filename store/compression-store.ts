@@ -55,9 +55,10 @@ export const useCompressionStore = create<CompressionStore>((set, get) => ({
   },
   videoOptions: {
     bitrate: '1000k',
-    preset: 'medium',
+    preset: 'ultrafast',
     crf: 23,
     scale: '1280:-1',
+    sampleRate: '128k',
     vcodec: 'libx264',
   },
   imageOptions: {

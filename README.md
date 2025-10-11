@@ -1,37 +1,30 @@
-# 🗜️ Quick Compression - Developer Guide
+# Quick Compression - Developer Guide
 
-Quick Compression is an open-source, modular file compression tool built with Next.js, TypeScript, FFmpeg, and pdf-lib. It supports audio, video, image, and PDF compression, all processed locally in your browser for privacy—no files are uploaded to a server. The app features real-time progress tracking, detailed error handling, and a modern UI for selecting compression options.
+Quick Compression is an open-source, modular file compression and conversion tool built with Next.js, TypeScript, and FFmpeg. It supports audio, video, and image compression with format conversion capabilities, all processed locally in your browser for privacy—no files are uploaded to a server. The app features real-time progress tracking, detailed error handling, and a modern UI for selecting compression and conversion options.
 
-## 🆕 Recent Updates
+## Recent Updates
 
+- **Type Conversion Support**: Added format conversion for audio (AAC, MP3, Opus/Vorbis) and video (WebM) with limited, optimized options for better compatibility.
+- **Fixed Conversion Issues**: Resolved codec mapping and argument handling issues for reliable format conversion.
+- **Updated Compression Settings UI**: Redesigned settings interface for better user experience with conversion options.
 - **Audio Format Selector Fix**: The audio format selector now correctly maps codecs to output formats and MIME types (e.g., Opus uses OGG).
+- **Removed PDF Support**: PDF functionality has been removed as it only provided basic optimization rather than true compression.
 - **Improved FFmpeg Argument Handling**: Audio and video compression now use robust argument construction for better compatibility and output reliability.
 - **Detailed Logging & Error Handling**: All compression hooks provide detailed logs and user-friendly error messages for easier debugging.
 - **UI Updates for Image/Video Settings**: Resolution selection for images and videos now uses presets (e.g., 720p, 1080p) with support for custom values, improving usability and state synchronization.
 
-## 🚀 **New: Real PDF Compression with pdf-lib**
-
-The application now includes **real PDF compression** using the pdf-lib library:
-- ✅ **Metadata removal** for privacy and size reduction
-- ✅ **Form flattening** to convert interactive forms to static content  
-- ✅ **Quality-based compression** (screen, ebook, printer, prepress)
-- ✅ **Object stream optimization** for better compression ratios
-- ✅ **Detailed logging** and error handling for PDF-specific issues
-- ✅ **Progress tracking** with real-time updates
-- ✅ **FileDropZone support** - PDFs can now be uploaded and compressed
-
-## 📋 Table of Contents
+## Table of Contents
 
 - [Architecture Overview](#architecture-overview)
 - [Project Structure](#project-structure)
-- [Compression Flow](#compression-flow)
+- [Compression and Conversion Flow](#compression-and-conversion-flow)
 - [Adding New File Types](#adding-new-file-types)
 - [Debugging Guide](#debugging-guide)
 - [Development Workflow](#development-workflow)
 - [Performance Considerations](#performance-considerations)
 - [Troubleshooting](#troubleshooting)
 
-## 🏗️ Architecture Overview
+## Architecture Overview
 
 ### Core Design Principles
 
@@ -53,21 +46,17 @@ useCompression (Main Orchestrator - 96 lines)
 │   ├── Provides global progress tracking and error handling
 │   └── Handles virtual file system operations
 ├── useAudioCompression (67 lines) - FFmpeg-based
-│   ├── Handles audio-specific compression with codec-to-format mapping
-│   ├── Includes detailed logging and argument validation
-│   └── Supports multiple audio formats (MP3, OGG, etc.)
+│   ├── Handles audio compression and format conversion (AAC, MP3, Opus/Vorbis)
+│   ├── Includes codec-to-format mapping and detailed logging
+│   └── Supports multiple audio formats with optimized settings
 ├── useVideoCompression (69 lines) - FFmpeg-based
-│   ├── Manages video compression with advanced argument handling
+│   ├── Manages video compression and conversion to WebM format
 │   ├── Provides resolution and bitrate optimization
 │   └── Includes comprehensive error handling and logging
 ├── useImageCompression (72 lines) - Canvas API-based
 │   ├── Performs client-side image resizing and format conversion
 │   ├── Uses HTML5 Canvas for efficient processing
 │   └── Handles various image formats (JPEG, PNG, WebP)
-└── usePdfCompression (78 lines) - pdf-lib-based ⭐ NEW
-    ├── Implements real PDF compression with metadata removal
-    ├── Supports quality-based compression levels
-    └── Provides form flattening and object stream optimization
 ```
 
 Each compression hook is self-contained, receives options from Zustand stores, and integrates seamlessly with the shared FFmpeg instance for consistent state management.
@@ -96,7 +85,7 @@ Zustand Stores:
 
 Each store follows the single responsibility principle, ensuring clean separation of concerns and easy testing.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
@@ -107,10 +96,11 @@ src/
 ├── components/
 │   ├── ui/                     # Shadcn/ui components
 │   ├── FileDropZone.tsx        # File upload interface
-│   ├── CompressionSettings.tsx # Settings panel
+│   ├── CompressionSettings.tsx # Settings panel with conversion options
 │   ├── ProgressDisplay.tsx     # Progress and stats
 │   ├── FileListResults.tsx     # Results display
 │   ├── settings/
+│   │   ├── AudioSettings.tsx   # Audio settings with format conversion
 │   │   ├── ImageSettings.tsx   # Image settings with resolution presets
 │   │   └── VideoSettings.tsx   # Video settings with resolution presets
 ├── lib/                        # Core compression hooks
@@ -119,7 +109,6 @@ src/
 │   ├── useAudioCompression.ts # Audio-specific logic (with codec-to-format mapping, detailed logging)
 │   ├── useVideoCompression.ts # Video-specific logic (improved argument handling, logging)
 │   ├── useImageCompression.ts # Image-specific logic (canvas-based, error handling)
-│   └── usePdfCompression.ts   # PDF-specific logic
 ├── store/                     # Zustand state stores
 │   ├── file-store.ts         # File management
 │   ├── settings-store.ts     # Settings state
@@ -136,7 +125,7 @@ src/
     └── download-helper.ts     # Download utilities
 ```
 
-## 🔄 Compression Flow
+## Compression and Conversion Flow
 
 ### 1. File Upload Flow
 ```mermaid
@@ -147,23 +136,20 @@ graph TD
     D --> E[User clicks compress]
 ```
 
-### 2. Compression Process Flow
+### 2. Compression and Conversion Process Flow
 ```mermaid
 graph TD
     A[compressFile called] --> B[getCompressionType detects file type]
     B --> C{File Type?}
-    C -->|Audio| D[useAudioCompression.compressAudio]
-    C -->|Video| E[useVideoCompression.compressVideo] 
-    C -->|Image| F[useImageCompression.compressImage]
-    C -->|PDF| G[usePdfCompression.compressPdf]
-    D --> H[FFmpeg processes file]
+    C -->|Audio| D[useAudioCompression: compress & convert (AAC/MP3/Opus)]
+    C -->|Video| E[useVideoCompression: compress & convert to WebM]
+    C -->|Image| F[useImageCompression: compress & convert (JPEG/PNG/WebP)]
+    D --> H[FFmpeg processes with conversion]
     E --> H
-    F --> I[Canvas API processes]
-    G --> J[pdf-lib processes]
+    F --> I[Canvas API processes with conversion]
     H --> K[Progress updates via global state]
     I --> K
-    J --> K
-    K --> L[Compressed blob returned]
+    K --> L[Converted/compressed blob returned]
     L --> M[File store updated with results]
 ```
 
@@ -191,6 +177,8 @@ graph TD
 ```
 
 Options are centrally managed in Zustand stores, ensuring consistent configuration across all compression operations and UI components.
+
+## Adding New File Types
 
 ### Step 1: Update Types
 ```typescript
@@ -276,7 +264,7 @@ export const useCompression = () => {
 ### Step 4: Update File Type Detection
 ```typescript
 // utils/file-compression.ts
-export function getCompressionType(file: File): 'audio' | 'video' | 'image' | 'pdf' | 'newFileType' | null {
+export function getCompressionType(file: File): 'audio' | 'video' | 'image' | 'newFileType' | null {
   // Add your file type detection logic
   if (file.type === 'application/your-type' || file.name.toLowerCase().endsWith('.ext')) {
     return 'newFileType';
@@ -311,7 +299,7 @@ export function getSmartDefaults(file: File, type: string): CompressionOptions {
 }
 ```
 
-## 🐛 Debugging Guide
+## Debugging Guide
 
 ### Debug FFmpeg Issues
 ```typescript
@@ -343,9 +331,10 @@ console.log('Compression options:', options);
 console.log('FFmpeg args:', args);
 ```
 
-### Audio/Video Compression Debugging
-- **Codec-to-Format Mapping**: Audio compression now uses a mapping to ensure the correct output format and MIME type for each codec (e.g., Opus → OGG).
-- **FFmpeg Argument Validation**: Arguments are validated and logged before running FFmpeg. Check the browser console for detailed logs if output files are empty or invalid.
+### Audio/Video Compression and Conversion Debugging
+- **Format Conversion**: Audio supports conversion to AAC, MP3, and Opus/Vorbis formats. Video converts to WebM. Check codec compatibility for source files.
+- **Codec-to-Format Mapping**: Audio compression uses mapping to ensure correct output format and MIME type (e.g., Opus → OGG).
+- **FFmpeg Argument Validation**: Arguments are validated and logged before running FFmpeg. Check browser console for detailed logs if conversion fails.
 - **Error Handling**: All hooks throw user-friendly errors and log technical details for easier troubleshooting.
 
 ### UI Debugging
@@ -376,7 +365,7 @@ console.log('Compression state:', compressionState);
 3. **File type not detected**: Check MIME types and file extensions
 4. **Compression failing**: Enable FFmpeg logging to see detailed errors
 
-## 🚀 Development Workflow
+## Development Workflow
 
 ### Running the Application
 ```bash
@@ -410,7 +399,7 @@ pnpm add -D @types/new-lib
 4. **Progress tracking**: Ensure progress updates correctly
 5. **Error handling**: Test error scenarios
 
-## ⚡ Performance Considerations
+## Performance Considerations
 
 ### Memory Management
 - FFmpeg operations can use significant memory
@@ -432,10 +421,10 @@ await ffmpegInstance.deleteFile(inputFileName);
 await ffmpegInstance.deleteFile(outputFileName);
 
 // Use appropriate quality settings
-const quality = fileSizeMB > 100 ? 'screen' : 'ebook'; // PDF example
+const quality = fileSizeMB > 100 ? 'high' : 'medium';
 ```
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### FFmpeg Not Loading
 ```bash
@@ -463,7 +452,7 @@ pnpm dev
 2. Verify all types are properly exported
 3. Ensure dependencies are installed
 
-## 📚 Key Files to Understand
+## Key Files to Understand
 
 1. **`lib/useFFmpeg.ts`**: Singleton pattern, global state management
 2. **`lib/useCompression.tsx`**: Main orchestrator, how hooks are combined
@@ -471,22 +460,23 @@ pnpm dev
 4. **`utils/compression-defaults.ts`**: Smart defaults based on file size
 5. **`store/file-store.ts`**: File state management with Zustand
 
-## 🎯 Best Practices
+## Best Practices
 
-1. **Use Preset Selectors for Resolution**: Prefer using the built-in resolution presets for images and videos to ensure optimal results and avoid invalid input.
-2. **Check Codec/Format Mapping**: When compressing audio, verify the codec-to-format mapping to ensure correct output.
-3. **Enable Logging for Debugging**: Use browser console logs to trace FFmpeg arguments and error messages.
-4. **Test UI State Sync**: When updating settings, verify that the UI reflects the current state, especially for custom resolution values.
-5. **Leverage Zustand for State Management**: Use the separated store logics (settings, files, compression) for clean state management and avoid prop drilling.
-6. **Keep hooks under 100 lines** when possible
-7. **Always handle errors gracefully** with user-friendly messages
-8. **Update progress regularly** for good UX
-9. **Clean up resources** after compression
-10. **Use TypeScript strictly** - avoid `any` types
-11. **Test with real files** of various sizes and formats
-12. **Document new compression parameters** in types
-13. **Follow the established patterns** when adding new features
+1. **Choose Appropriate Output Formats**: Use the limited conversion options (WebM for video, AAC/MP3/Opus for audio) for best compatibility and performance.
+2. **Use Preset Selectors for Resolution**: Prefer using the built-in resolution presets for images and videos to ensure optimal results and avoid invalid input.
+3. **Check Codec/Format Mapping**: When compressing audio, verify the codec-to-format mapping to ensure correct output.
+4. **Enable Logging for Debugging**: Use browser console logs to trace FFmpeg arguments and error messages.
+5. **Test UI State Sync**: When updating settings, verify that the UI reflects the current state, especially for custom resolution values.
+6. **Leverage Zustand for State Management**: Use the separated store logics (settings, files, compression) for clean state management and avoid prop drilling.
+7. **Keep hooks under 100 lines** when possible
+8. **Always handle errors gracefully** with user-friendly messages
+9. **Update progress regularly** for good UX
+10. **Clean up resources** after compression
+11. **Use TypeScript strictly** - avoid `any` types
+12. **Test with real files** of various sizes and formats
+13. **Document new compression parameters** in types
+14. **Follow the established patterns** when adding new features
 
 ---
 
-Happy coding! 🚀 The modular architecture makes it easy to add new compression types while maintaining clean, maintainable code.
+Happy coding! The modular architecture makes it easy to add new compression types while maintaining clean, maintainable code.

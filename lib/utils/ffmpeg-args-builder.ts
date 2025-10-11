@@ -3,247 +3,262 @@
  * Provides optimized command line arguments for different compression types
  */
 
-import { AudioCompressionOptions, CompressionOptions } from '@/types';
-import { getFFmpegThreadArgs } from '@/lib/threadUtils';
+import { AudioCompressionOptions, CompressionOptions, VideoCompressionOptions } from "@/types";
+import { getFFmpegThreadArgs } from "@/lib/threadUtils";
 
 /**
  * Generates unique file names for FFmpeg operations
  */
 export const generateFFmpegFileNames = (originalName: string, outputFormat: string) => {
-  const timestamp = Date.now();
-  const extension = originalName.split('.').pop() || 'tmp';
-  
-  return {
-    inputFileName: `input_${timestamp}.${extension}`,
-    outputFileName: `output_${timestamp}.${outputFormat}`
-  };
+	const timestamp = Date.now();
+	const extension = originalName.split(".").pop() || "tmp";
+
+	return {
+		inputFileName: `input_${timestamp}.${extension}`,
+		outputFileName: `output_${timestamp}.${outputFormat}`,
+	};
 };
 
 /**
  * Gets appropriate MIME type for output format and media type
  */
-export const getOutputMimeType = (outputFormat: string, mediaType: 'audio' | 'video' | 'image'): string => {
-  switch (mediaType) {
-    case 'audio':
-      switch (outputFormat) {
-        case 'mp3': return 'audio/mp3';
-        case 'ogg': return 'audio/ogg';
-        case 'wav': return 'audio/wav';
-        case 'aac': return 'audio/aac';
-        default: return 'audio/mp3';
-      }
-    case 'video':
-      switch (outputFormat) {
-        case 'webm': return 'video/webm';
-        case 'mkv': return 'video/x-matroska';
-        case 'avi': return 'video/x-msvideo';
-        default: return 'video/mp4';
-      }
-    case 'image':
-      switch (outputFormat) {
-        case 'jpeg': case 'jpg': return 'image/jpeg';
-        case 'png': return 'image/png';
-        case 'webp': return 'image/webp';
-        case 'avif': return 'image/avif';
-        default: return 'image/jpeg';
-      }
-    default:
-      return 'application/octet-stream';
-  }
+export const getOutputMimeType = (outputFormat: string, mediaType: "audio" | "video" | "image"): string => {
+	switch (mediaType) {
+		case "audio":
+			switch (outputFormat) {
+				case "mp3":
+					return "audio/mp3";
+				case "ogg":
+					return "audio/ogg";
+				case "wav":
+					return "audio/wav";
+				case "aac":
+					return "audio/aac";
+				default:
+					return "audio/mp3";
+			}
+		case "video":
+			switch (outputFormat) {
+				case "webm":
+					return "video/webm";
+				case "mkv":
+					return "video/x-matroska";
+				case "avi":
+					return "video/x-msvideo";
+				default:
+					return "video/mp4";
+			}
+		case "image":
+			switch (outputFormat) {
+				case "jpeg":
+				case "jpg":
+					return "image/jpeg";
+				case "png":
+					return "image/png";
+				case "webp":
+					return "image/webp";
+				case "avif":
+					return "image/avif";
+				default:
+					return "image/jpeg";
+			}
+		default:
+			return "application/octet-stream";
+	}
 };
 
 /**
  * Builds FFmpeg arguments for audio compression with multithreading
  */
 export const buildAudioArgs = (
-  options:AudioCompressionOptions,
-  inputFileName: string,
-  outputFileName: string
+	options: AudioCompressionOptions,
+	inputFileName: string,
+	outputFileName: string
 ): string[] => {
-  let args = ['-i', inputFileName];
-  
-  // Add threading arguments for optimal performance
-  const threadArgs = getFFmpegThreadArgs('audio');
-  // args = args.concat(threadArgs);
+	let args = ["-i", inputFileName];
 
-  // Use custom args if provided, otherwise build from options
-  if (options.customArgs && options.customArgs.length > 0) {
-    args = args.concat(options.customArgs);
-    args.push(outputFileName);
-  } else {
-    const outputFormat = options.outputFormat || 'mp3';
+	// Add threading arguments for optimal performance
+	const threadArgs = getFFmpegThreadArgs("audio");
+	args = args.concat(threadArgs);
 
-    // Format specification first (especially important for ogg container)
-    if (outputFormat === 'ogg') {
-      args.push('-f', 'ogg');
-    }
+	// Use custom args if provided, otherwise build from options
+	if (options.customArgs && options.customArgs.length > 0) {
+		args = args.concat(options.customArgs);
+		args.push(outputFileName);
+	} else {
+		const outputFormat = options.outputFormat || "mp3";
 
-    // Audio codec - normalize codec names
-    let codec = options.acodec;
-    if (codec === 'opus') codec = 'libopus';
-    if (codec === 'vorbis') codec = 'libvorbis';
-    
-    if (codec) {
-      args.push('-acodec', codec);
-    } else {
-      args.push('-acodec', outputFormat === 'mp3' ? 'libmp3lame' : 'aac');
-    }
+		// Format specification first (especially important for ogg container)
+		if (outputFormat === "ogg") {
+			args.push("-f", "ogg");
+		}
 
-    // Sample rate
-    if (options.sampleRate) {
-      args.push('-ar', options.sampleRate);
-    } else {
-      args.push('-ar', '44100');
-    }
+		// Audio codec - normalize codec names
+		let codec = options.acodec;
+		if (codec === "opus") codec = "libvorbis";
 
-    // Channels
-    if (options.channels !== undefined) {
-      args.push('-ac', options.channels.toString());
-    } else {
-      args.push('-ac', '2');
-    }
+		if (codec) {
+			args.push("-acodec", codec);
+		} else {
+			args.push("-acodec", outputFormat === "mp3" ? "libmp3lame" : "aac");
+		}
 
-    // Codec-specific quality/bitrate settings
-    if (codec === 'libopus') {
-      // For Opus, use simpler settings that are more compatible with FFmpeg.wasm
-      args.push('-b:a', options.bitrate || '128k');
-      // Remove advanced Opus settings that might not be supported
-    } else if (codec === 'libvorbis') {
-      // For Vorbis, use quality-based encoding
-      args.push('-q:a', '5'); // Quality 5 is good for Vorbis (~160kbps)
-    } else {
-      // For other codecs (AAC, MP3), use bitrate
-      if (options.bitrate) {
-        args.push('-b:a', options.bitrate);
-      } else {
-        args.push('-b:a', '128k');
-      }
-    }
-    args.push('-y');
-    args.push(outputFileName);
-  }
+		// Sample rate
+		if (options.sampleRate) {
+			args.push("-ar", options.sampleRate);
+		} else {
+			args.push("-ar", "44100");
+		}
 
-  return args;
+		// Channels
+		if (options.channels !== undefined) {
+			args.push("-ac", options.channels.toString());
+		} else {
+			args.push("-ac", "2");
+		}
+
+		// Codec-specific quality/bitrate settings
+		if (codec === "libopus") {
+			// For Opus, use simpler settings that are more compatible with FFmpeg.wasm
+			args.push("-b:a", options.bitrate || "128k");
+			// Remove advanced Opus settings that might not be supported
+		} else if (codec === "libvorbis") {
+			// For Vorbis, use quality-based encoding
+			args.push("-q:a", "5"); // Quality 5 is good for Vorbis (~160kbps)
+		} else {
+			// For other codecs (AAC, MP3), use bitrate
+			if (options.bitrate) {
+				args.push("-b:a", options.bitrate);
+			} else {
+				args.push("-b:a", "128k");
+			}
+		}
+		args.push("-y");
+		args.push(outputFileName);
+	}
+
+	return args;
 };
 
 /**
  * Builds FFmpeg arguments for video compression with multithreading
  */
 export const buildVideoArgs = (
-  options: CompressionOptions,
-  inputFileName: string,
-  outputFileName: string
+	options: VideoCompressionOptions,
+	inputFileName: string,
+	outputFileName: string
 ): string[] => {
-  let args = ['-i', inputFileName];
-  
-  // Add threading arguments for optimal performance
-  const threadArgs = getFFmpegThreadArgs('video');
-  args = args.concat(threadArgs);
+	let args = ["-i", inputFileName];
 
-  // Use custom args if provided, otherwise build from options
-  if (options.customArgs && options.customArgs.length > 0) {
-    args = args.concat(options.customArgs);
-    args.push(outputFileName);
-  } else {
-    // Video codec
-    if (options.vcodec) {
-      args.push('-vcodec', options.vcodec);
-    } else {
-      args.push('-vcodec', 'libx264');
-    }
+	// Add threading arguments for optimal performance
+	const threadArgs = getFFmpegThreadArgs("video");
+	args = args.concat(threadArgs);
+	
+	// Use custom args if provided, otherwise build from options
+	if (options.customArgs && options.customArgs.length > 0) {
+		args = args.concat(options.customArgs);
+		args.push(outputFileName);
+	} else {
+		// Video codec
+		if (options.vcodec) {
+			args.push("-vcodec", options.vcodec);
+		} else {
+			args.push("-vcodec", "libx264");
+		}
 
-    // CRF (quality)
-    if (options.crf !== undefined) {
-      args.push('-crf', options.crf.toString());
-    } else {
-      args.push('-crf', '27');
-    }
+		// CRF (quality)
+		if (options.crf !== undefined) {
+			args.push("-crf", options.crf.toString());
+		} else {
+			args.push("-crf", "27");
+		}
 
-    // Preset (ultrafast for better threading performance)
-    if (options.preset) {
-      args.push('-preset', options.preset);
-    } else {
-      args.push('-preset', 'ultrafast');
-    }
+		// Preset (ultrafast for better threading performance)
+		if (options.preset) {
+			args.push("-preset", options.preset);
+		} else {
+			args.push("-preset", "ultrafast");
+		}
 
-    // Video bitrate (if specified)
-    if (options.bitrate) {
-      args.push('-b:v', options.bitrate);
-    }
+		// Video bitrate (if specified)
+		if (options.bitrate) {
+			args.push("-b:v", options.bitrate);
+		}
 
-    // Scale/resolution
-    if (options.scale) {
-      // Ensure scale is properly formatted for FFmpeg
-      const scaleValue = options.scale.includes('scale=') ? options.scale : `scale=${options.scale}`;
-      args.push('-vf', scaleValue);
-    } else if (options.maxWidth) {
-      args.push('-vf', `scale='min(${options.maxWidth},iw)':-2`);
-    } else {
-      args.push('-vf', `scale='min(720,iw)':-2`);
-    }
+		// Scale/resolution
+		if (options.scale) {
+			// Ensure scale is properly formatted for FFmpeg
+			const scaleValue = options.scale.includes("scale=") ? options.scale : `scale=${options.scale}`;
+			args.push("-vf", scaleValue);
+		} else if (options.maxWidth) {
+			args.push("-vf", `scale='min(${options.maxWidth},iw)':-2`);
+		} else {
+			args.push("-vf", `scale='min(720,iw)':-2`);
+		}
 
-    // Audio codec
-    if (options.acodec) {
-      args.push('-acodec', options.acodec);
-    } else {
-      args.push('-acodec', 'aac');
-    }
+		// Audio codec
+		if (options.vcodec === "libvpx") {
+			args.push("-acodec", "libvorbis");
+		} else {
+			args.push("-acodec", "aac");
+      args.push("-b:a", options.sampleRate || "128k"); 
+		}
 
-    // Audio bitrate (separate from video bitrate)
-    args.push('-b:a', '128k'); // Fixed audio bitrate for video compression
+		// Audio bitrate (separate from video bitrate)
+		// Fixed audio bitrate for video compression
 
-    // Optimization for web
-    args.push('-movflags', '+faststart');
-    
-    args.push(outputFileName);
-  }
+		// Optimization for web
+		args.push("-movflags", "+faststart");
 
-  return args;
+		args.push(outputFileName);
+	}
+
+	return args;
 };
 
 /**
  * Builds FFmpeg arguments for image compression with multithreading
  */
 export const buildImageArgs = (
-  options: CompressionOptions,
-  inputFileName: string,
-  outputFileName: string
+	options: CompressionOptions,
+	inputFileName: string,
+	outputFileName: string
 ): string[] => {
-  let args = ['-i', inputFileName];
-  
-  // Add threading arguments for optimal performance
-  const threadArgs = getFFmpegThreadArgs('image');
-  args = args.concat(threadArgs);
+	let args = ["-i", inputFileName];
 
-  // Use custom args if provided, otherwise build from options
-  if (options.customArgs && options.customArgs.length > 0) {
-    args = args.concat(options.customArgs);
-    args.push(outputFileName);
-  } else {
-    const outputFormat = options.outputFormat || 'jpeg';
+	// Add threading arguments for optimal performance
+	const threadArgs = getFFmpegThreadArgs("image");
+	args = args.concat(threadArgs);
 
-    // Quality setting
-    if (options.quality !== undefined) {
-      if (outputFormat === 'jpeg' || outputFormat === 'jpg') {
-        args.push('-q:v', Math.round(31 - (options.quality * 0.31)).toString());
-      } else if (outputFormat === 'webp') {
-        args.push('-quality', options.quality.toString());
-      }
-    } else {
-      if (outputFormat === 'jpeg' || outputFormat === 'jpg') {
-        args.push('-q:v', '15'); // Good quality/size balance
-      } else if (outputFormat === 'webp') {
-        args.push('-quality', '75');
-      }
-    }
+	// Use custom args if provided, otherwise build from options
+	if (options.customArgs && options.customArgs.length > 0) {
+		args = args.concat(options.customArgs);
+		args.push(outputFileName);
+	} else {
+		const outputFormat = options.outputFormat || "jpeg";
 
-    // Resolution scaling
-    if (options.maxWidth) {
-      args.push('-vf', `scale='min(${options.maxWidth},iw)':-2`);
-    }
+		// Quality setting
+		if (options.quality !== undefined) {
+			if (outputFormat === "jpeg" || outputFormat === "jpg") {
+				args.push("-q:v", Math.round(31 - options.quality * 0.31).toString());
+			} else if (outputFormat === "webp") {
+				args.push("-quality", options.quality.toString());
+			}
+		} else {
+			if (outputFormat === "jpeg" || outputFormat === "jpg") {
+				args.push("-q:v", "15"); // Good quality/size balance
+			} else if (outputFormat === "webp") {
+				args.push("-quality", "75");
+			}
+		}
 
-    args.push(outputFileName);
-  }
+		// Resolution scaling
+		if (options.maxWidth) {
+			args.push("-vf", `scale='min(${options.maxWidth},iw)':-2`);
+		}
 
-  return args;
+		args.push(outputFileName);
+	}
+
+	return args;
 };

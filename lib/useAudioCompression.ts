@@ -48,14 +48,7 @@ export const useAudioCompression = () => {
     setCompressionProgress(0);
 
     try {
-      console.log('🎯 STARTING AUDIO COMPRESSION PROCESS');
-      console.log('📊 Input file details:', {
-        name: file.name,
-        size: `${formatFileSizeMB(file.size)} MB`,
-        type: file.type,
-        lastModified: new Date(file.lastModified).toISOString()
-      });
-
+ 
       const ffmpegInstance = await initializeFFmpeg();
       const { fetchFile: fetchFileUtil } = await getFFmpegUtils();
 
@@ -66,16 +59,7 @@ export const useAudioCompression = () => {
       }
       outputFormat = outputFormat || 'mp3';
 
-      console.log('🔄 Format determination:', {
-        originalFormat: audioOptions.outputFormat,
-        detectedFromCodec: audioOptions.acodec ? codecToFormat[audioOptions.acodec] : null,
-        finalFormat: outputFormat,
-        codecToFormatMap: codecToFormat
-      });
-
       const { inputFileName, outputFileName } = generateFFmpegFileNames(file.name, outputFormat);
-
-      console.log('📝 Generated file names:', { inputFileName, outputFileName });
 
       // Build compression arguments with the computed output format
       const finalOptions = { ...audioOptions, outputFormat };
@@ -84,53 +68,21 @@ export const useAudioCompression = () => {
       // Log detailed debug information
       logFFmpegDebugInfo(args, finalOptions, file.name);
 
-      console.log('🔧 Final FFmpeg arguments:', args);
-      console.log('⚙️ Thread configuration:', getThreadConfigInfo());
-      
-      // For debugging: check codec support if using opus/vorbis
-      if (audioOptions.acodec === 'opus' || audioOptions.acodec === 'vorbis') {
-        console.log(`🎵 Codec Analysis - Attempting ${audioOptions.acodec} compression`);
-        console.log('🔍 Critical codec checks:', {
-          codecNormalization: audioOptions.acodec === 'opus' ? 'opus → libopus' : 'vorbis → libvorbis',
-          targetContainer: outputFormat,
-          isValidCombination: (audioOptions.acodec === 'opus' && outputFormat === 'ogg') || 
-                             (audioOptions.acodec === 'vorbis' && outputFormat === 'ogg'),
-          expectedFileExtension: `.${outputFormat}`,
-          mimeType: mimeMap[outputFormat]
-        });
-      }
-
-      console.log('📤 Writing input file to FFmpeg virtual filesystem...');
       // Write input file to FFmpeg's virtual file system
       await ffmpegInstance.writeFile(inputFileName, await fetchFileUtil(file));
-      console.log('✅ Input file written successfully');
       
       // Reset progress to 0 before starting
       setCompressionProgress(0);
-      console.log('🚀 Executing FFmpeg compression...');
-      
+
       await ffmpegInstance.exec(args);
 
-      console.log('✅ FFmpeg execution completed');
-
       // Check if the output file exists and has content
-      console.log('📖 Reading compressed output file...');
       const compressedData = await ffmpegInstance.readFile(outputFileName);
-      console.log(`📊 Output file analysis:`, {
-        outputFileName,
-        rawDataSize: compressedData.length,
-        sizeInBytes: `${compressedData.length} bytes`,
-        sizeInKB: `${(compressedData.length / 1024).toFixed(2)} KB`,
-        sizeInMB: `${(compressedData.length / (1024 * 1024)).toFixed(4)} MB`,
-        isEmpty: compressedData.length === 0,
-        dataType: typeof compressedData,
-        isArrayBuffer: compressedData instanceof ArrayBuffer,
-        isUint8Array: compressedData instanceof Uint8Array
-      });
+
       
       if (compressedData.length === 0) {
         console.error('💥 CRITICAL ERROR: FFmpeg produced empty output file!');
-        console.log('🔍 Debugging information:');
+        console.log(' Debugging information:');
         console.log('  - Input file size:', file.size, 'bytes');
         console.log('  - Codec used:', audioOptions.acodec);
         console.log('  - Output format:', outputFormat);
@@ -139,40 +91,15 @@ export const useAudioCompression = () => {
       }
 
       const mimeType = mimeMap[outputFormat] || 'audio/mp3';
-      console.log('🏷️ MIME type mapping:', {
-        outputFormat,
-        detectedMimeType: mimeType,
-        availableMimeTypes: mimeMap
-      });
-      
+
       const compressedBlob = new Blob([compressedData], { type: mimeType });
-      console.log('📦 Blob creation successful:', {
-        blobSize: compressedBlob.size,
-        blobType: compressedBlob.type,
-        compressionRatio: `${((1 - compressedBlob.size / file.size) * 100).toFixed(1)}%`
-      });
 
       // Calculate compression stats
       const stats = calculateCompressionStats(file.size, compressedBlob.size);
-      console.log('📊 Compression statistics:', stats);
-
-      console.log(`🎉 Audio compression SUCCESS:`, {
-        inputSize: formatFileSizeMB(file.size),
-        outputSize: formatFileSizeMB(compressedBlob.size),
-        compressionRatio: `${stats.compressionRatio.toFixed(1)}% reduction`,
-        format: outputFormat,
-        codec: audioOptions.acodec,
-        mimeType: mimeType,
-        processingTime: 'completed'
-      });
 
       // Cleanup virtual files
-      console.log('🧹 Cleaning up virtual files...');
       await ffmpegInstance.deleteFile(inputFileName);
       await ffmpegInstance.deleteFile(outputFileName);
-      console.log('✅ Cleanup completed');
-
-      console.log(`📈 Final compression summary: ${formatFileSizeMB(file.size)} → ${formatFileSizeMB(compressedBlob.size)} (${stats.compressionRatio.toFixed(1)}% smaller)`);
 
       // Set progress to 100% when complete
       setCompressionProgress(100);
