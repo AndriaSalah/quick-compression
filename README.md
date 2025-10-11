@@ -1,6 +1,13 @@
 # 🗜️ Quick Compression - Developer Guide
 
-A modular, scalable file compression application built with Next.js, TypeScript, FFmpeg, and pdf-lib. Supports audio, video, image, and PDF compression with real-time progress tracking.
+Quick Compression is an open-source, modular file compression tool built with Next.js, TypeScript, FFmpeg, and pdf-lib. It supports audio, video, image, and PDF compression, all processed locally in your browser for privacy—no files are uploaded to a server. The app features real-time progress tracking, detailed error handling, and a modern UI for selecting compression options.
+
+## 🆕 Recent Updates
+
+- **Audio Format Selector Fix**: The audio format selector now correctly maps codecs to output formats and MIME types (e.g., Opus uses OGG).
+- **Improved FFmpeg Argument Handling**: Audio and video compression now use robust argument construction for better compatibility and output reliability.
+- **Detailed Logging & Error Handling**: All compression hooks provide detailed logs and user-friendly error messages for easier debugging.
+- **UI Updates for Image/Video Settings**: Resolution selection for images and videos now uses presets (e.g., 720p, 1080p) with support for custom values, improving usability and state synchronization.
 
 ## 🚀 **New: Real PDF Compression with pdf-lib**
 
@@ -33,26 +40,61 @@ The application now includes **real PDF compression** using the pdf-lib library:
 3. **Type Safety**: Comprehensive TypeScript coverage with centralized types
 4. **Separation of Concerns**: Clear separation between UI, business logic, and utilities
 5. **Scalability**: Easy to add new compression types without touching existing code
+6. **Local-Only Processing**: All compression is performed in-browser for privacy—no uploads.
 
 ### Hook Hierarchy
+
+The compression system follows a modular architecture where each file type has its own specialized hook, promoting code reusability and maintainability:
 
 ```
 useCompression (Main Orchestrator - 96 lines)
 ├── useFFmpeg (Shared FFmpeg Instance - 140 lines)
+│   ├── Manages FFmpeg.wasm loading and instance lifecycle
+│   ├── Provides global progress tracking and error handling
+│   └── Handles virtual file system operations
 ├── useAudioCompression (67 lines) - FFmpeg-based
-├── useVideoCompression (69 lines) - FFmpeg-based  
+│   ├── Handles audio-specific compression with codec-to-format mapping
+│   ├── Includes detailed logging and argument validation
+│   └── Supports multiple audio formats (MP3, OGG, etc.)
+├── useVideoCompression (69 lines) - FFmpeg-based
+│   ├── Manages video compression with advanced argument handling
+│   ├── Provides resolution and bitrate optimization
+│   └── Includes comprehensive error handling and logging
 ├── useImageCompression (72 lines) - Canvas API-based
+│   ├── Performs client-side image resizing and format conversion
+│   ├── Uses HTML5 Canvas for efficient processing
+│   └── Handles various image formats (JPEG, PNG, WebP)
 └── usePdfCompression (78 lines) - pdf-lib-based ⭐ NEW
+    ├── Implements real PDF compression with metadata removal
+    ├── Supports quality-based compression levels
+    └── Provides form flattening and object stream optimization
 ```
 
+Each compression hook is self-contained, receives options from Zustand stores, and integrates seamlessly with the shared FFmpeg instance for consistent state management.
+
 ### State Management
+
+The application uses Zustand for global state management with three specialized stores, each handling separated concerns for better modularity and maintainability:
 
 ```
 Zustand Stores:
 ├── file-store.ts - File management and results
-├── settings-store.ts - Compression settings
-└── compression-store.ts - Compression state
+│   ├── Manages uploaded files, compression results, and file metadata
+│   ├── Tracks file processing status and download URLs
+│   └── Handles file queue and batch operations
+├── settings-store.ts - Compression settings and options
+│   ├── Stores user-configurable compression parameters (quality, format, resolution)
+│   ├── Provides preset configurations for different use cases
+│   ├── Syncs settings across UI components using reactive state
+│   └── Validates and persists user preferences
+└── compression-store.ts - Compression state and progress
+    ├── Tracks real-time compression progress and status
+    ├── Manages FFmpeg instance state and error handling
+    ├── Coordinates between compression hooks and UI updates
+    └── Handles global compression lifecycle events
 ```
+
+Each store follows the single responsibility principle, ensuring clean separation of concerns and easy testing.
 
 ## 📁 Project Structure
 
@@ -67,13 +109,16 @@ src/
 │   ├── FileDropZone.tsx        # File upload interface
 │   ├── CompressionSettings.tsx # Settings panel
 │   ├── ProgressDisplay.tsx     # Progress and stats
-│   └── FileListResults.tsx     # Results display
+│   ├── FileListResults.tsx     # Results display
+│   ├── settings/
+│   │   ├── ImageSettings.tsx   # Image settings with resolution presets
+│   │   └── VideoSettings.tsx   # Video settings with resolution presets
 ├── lib/                        # Core compression hooks
 │   ├── useFFmpeg.ts           # Shared FFmpeg instance
 │   ├── useCompression.tsx     # Main orchestrator
-│   ├── useAudioCompression.ts # Audio-specific logic
-│   ├── useVideoCompression.ts # Video-specific logic
-│   ├── useImageCompression.ts # Image-specific logic
+│   ├── useAudioCompression.ts # Audio-specific logic (with codec-to-format mapping, detailed logging)
+│   ├── useVideoCompression.ts # Video-specific logic (improved argument handling, logging)
+│   ├── useImageCompression.ts # Image-specific logic (canvas-based, error handling)
 │   └── usePdfCompression.ts   # PDF-specific logic
 ├── store/                     # Zustand state stores
 │   ├── file-store.ts         # File management
@@ -134,7 +179,18 @@ graph TD
     E --> F[UI Components]
 ```
 
-## ➕ Adding New File Types
+### 4. Settings and Options Flow
+```mermaid
+graph TD
+    A[User adjusts settings] --> B[UI components update settings-store]
+    B --> C[settings-store persists options]
+    C --> D[useCompression retrieves options]
+    D --> E[Options passed to specific compression hooks]
+    E --> F[Hooks apply settings during compression]
+    F --> G[Results reflect user preferences]
+```
+
+Options are centrally managed in Zustand stores, ensuring consistent configuration across all compression operations and UI components.
 
 ### Step 1: Update Types
 ```typescript
@@ -155,22 +211,26 @@ export interface CompressionOptions {
 import { useCallback } from 'react';
 import { CompressionOptions } from '@/types';
 import { useFFmpeg } from './useFFmpeg';
+import { useSettingsStore } from '@/store/settings-store';
 
-export const useNewFileTypeCompression = (defaultOptions: CompressionOptions = {}) => {
+export const useNewFileTypeCompression = () => {
   const { setCompressionProgress, clearError } = useFFmpeg();
+  const newFileTypeOptions = useSettingsStore(state => state.newFileTypeOptions);
 
   const compressNewFileType = useCallback(async (
-    file: File,
-    customOptions: CompressionOptions = {}
+    file: File
   ): Promise<Blob> => {
     clearError();
     setCompressionProgress(0);
 
     try {
+      // Retrieve options from Zustand store
+      const options = { ...newFileTypeOptions };
+      
       // Your compression logic here
       setCompressionProgress(50);
       
-      // Process the file
+      // Process the file using options from store
       const result = await processFile(file, options);
       
       setCompressionProgress(100);
@@ -186,20 +246,20 @@ export const useNewFileTypeCompression = (defaultOptions: CompressionOptions = {
 };
 ```
 
-### Step 3: Add to Main Orchestrator
+### Step 3: Update Main Orchestrator
 ```typescript
 // lib/useCompression.tsx
 import { useNewFileTypeCompression } from './useNewFileTypeCompression';
 
-export const useCompression = (defaultOptions: CompressionOptions = {}) => {
-  // Add the new hook
-  const { compressNewFileType } = useNewFileTypeCompression(defaultOptions);
+export const useCompression = () => {
+  // Add the new hook (options are retrieved internally from Zustand)
+  const { compressNewFileType } = useNewFileTypeCompression();
   
   // Add wrapper function
-  const handleNewFileTypeCompression = async (file: File, customOptions: CompressionOptions = {}): Promise<Blob> => {
+  const handleNewFileTypeCompression = async (file: File): Promise<Blob> => {
     setIsCompressing(true);
     try {
-      return await compressNewFileType(file, customOptions);
+      return await compressNewFileType(file);
     } finally {
       setIsCompressing(false);
     }
@@ -281,6 +341,33 @@ console.log('Detected type:', detectedType);
 // In compression hooks
 console.log('Compression options:', options);
 console.log('FFmpeg args:', args);
+```
+
+### Audio/Video Compression Debugging
+- **Codec-to-Format Mapping**: Audio compression now uses a mapping to ensure the correct output format and MIME type for each codec (e.g., Opus → OGG).
+- **FFmpeg Argument Validation**: Arguments are validated and logged before running FFmpeg. Check the browser console for detailed logs if output files are empty or invalid.
+- **Error Handling**: All hooks throw user-friendly errors and log technical details for easier troubleshooting.
+
+### UI Debugging
+- **Resolution Presets**: Image and video settings use select menus for common resolutions (720p, 1080p, etc.), with custom value support. State is synchronized using Zustand.
+- **State Synchronization**: Check Zustand store updates for settings changes. Use browser dev tools to inspect store state.
+
+### Debug Zustand State
+```typescript
+// Debug settings store
+import { useSettingsStore } from '@/store/settings-store';
+const settings = useSettingsStore.getState();
+console.log('Current settings:', settings);
+
+// Debug file store
+import { useFileStore } from '@/store/file-store';
+const files = useFileStore.getState();
+console.log('Current files:', files);
+
+// Debug compression store
+import { useCompressionStore } from '@/store/compression-store';
+const compressionState = useCompressionStore.getState();
+console.log('Compression state:', compressionState);
 ```
 
 ### Common Debug Points
@@ -386,14 +473,19 @@ pnpm dev
 
 ## 🎯 Best Practices
 
-1. **Keep hooks under 100 lines** when possible
-2. **Always handle errors gracefully** with user-friendly messages
-3. **Update progress regularly** for good UX
-4. **Clean up resources** after compression
-5. **Use TypeScript strictly** - avoid `any` types
-6. **Test with real files** of various sizes and formats
-7. **Document new compression parameters** in types
-8. **Follow the established patterns** when adding new features
+1. **Use Preset Selectors for Resolution**: Prefer using the built-in resolution presets for images and videos to ensure optimal results and avoid invalid input.
+2. **Check Codec/Format Mapping**: When compressing audio, verify the codec-to-format mapping to ensure correct output.
+3. **Enable Logging for Debugging**: Use browser console logs to trace FFmpeg arguments and error messages.
+4. **Test UI State Sync**: When updating settings, verify that the UI reflects the current state, especially for custom resolution values.
+5. **Leverage Zustand for State Management**: Use the separated store logics (settings, files, compression) for clean state management and avoid prop drilling.
+6. **Keep hooks under 100 lines** when possible
+7. **Always handle errors gracefully** with user-friendly messages
+8. **Update progress regularly** for good UX
+9. **Clean up resources** after compression
+10. **Use TypeScript strictly** - avoid `any` types
+11. **Test with real files** of various sizes and formats
+12. **Document new compression parameters** in types
+13. **Follow the established patterns** when adding new features
 
 ---
 
