@@ -34,6 +34,30 @@ export interface CompressionOptions {
   removeMetadata?: boolean;
 }
 
+export type AudioCompressionOptions = Omit<CompressionOptions,
+   'quality' | 'maxWidth' | 'maxHeight' |
+  'preset' | 'crf' | 'scale' | 'vcodec' | 'imageQuality' |
+  'pdfQuality' | 'pdfCompatibility' | 'grayscale' | 'optimizeImages' | 'linearize'
+>;
+
+export type VideoCompressionOptions = Omit<CompressionOptions,  
+  'sampleRate' | 'channels' | 'acodec' |
+  'imageQuality' |
+  'pdfQuality' | 'pdfCompatibility' | 'grayscale' | 'optimizeImages' | 'linearize' | 
+  'removeMetadata'
+>;
+export type ImageCompressionOptions = Omit<CompressionOptions,
+  'bitrate' | 'sampleRate' | 'channels' | 'acodec' |
+  'quality' | 'preset' | 'crf' | 'scale' | 'vcodec' |
+  'pdfQuality' | 'pdfCompatibility' | 'grayscale' | 'optimizeImages' | 'linearize' | 'removeMetadata'
+>;
+
+export type PdfCompressionOptions = Omit<CompressionOptions,
+  'customArgs'|'bitrate' | 'sampleRate' | 'channels' | 'acodec' |
+  'quality' | 'maxWidth' | 'maxHeight' |
+  'preset' | 'crf' | 'scale' | 'vcodec' | 'imageQuality'
+>;
+
 export interface CompressionStats {
   originalSize: number;
   compressedSize: number;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { CompressionStats } from '@/types';
+import { AudioCompressionOptions, CompressionStats, ImageCompressionOptions, PdfCompressionOptions, VideoCompressionOptions } from '@/types';
 
 interface CompressionStore {
   // State
@@ -9,7 +9,11 @@ interface CompressionStore {
   currentProcessingFile: string | null;
   error: string | null;
   compressionStats: CompressionStats[];
-  
+  audioOptions: AudioCompressionOptions;
+  videoOptions: VideoCompressionOptions;
+  imageOptions: ImageCompressionOptions;
+  pdfOptions: PdfCompressionOptions;
+
   // FFmpeg state
   isFFmpegLoaded: boolean;
   isFFmpegLoading: boolean;
@@ -24,6 +28,10 @@ interface CompressionStore {
   addCompressionStats: (stats: CompressionStats) => void;
   setFFmpegLoaded: (loaded: boolean) => void;
   setFFmpegLoading: (loading: boolean) => void;
+  setAudioOptions: (options: AudioCompressionOptions) => void;
+  setVideoOptions: (options: VideoCompressionOptions) => void;
+  setImageOptions: (options: ImageCompressionOptions) => void;
+  setPdfOptions: (options: PdfCompressionOptions) => void;
   
   // Getters
   getLatestStats: () => CompressionStats | null;
@@ -39,12 +47,42 @@ export const useCompressionStore = create<CompressionStore>((set, get) => ({
   currentProcessingFile: null,
   error: null,
   compressionStats: [],
-  
+  audioOptions: {
+    bitrate: '128k',
+    sampleRate: '44100',
+    channels: 2,
+    acodec: 'aac',
+  },
+  videoOptions: {
+    bitrate: '1000k',
+    preset: 'medium',
+    crf: 23,
+    scale: '1280:-1',
+    vcodec: 'libx264',
+  },
+  imageOptions: {
+    quality: 80,
+    maxWidth: 1920,
+    maxHeight: 1080,
+  },
+  pdfOptions: {
+    pdfQuality: 'screen',
+    pdfCompatibility: '1.4',
+    grayscale: false,
+    optimizeImages: true,
+    linearize: false,
+    removeMetadata: true,
+  },
+
   // FFmpeg state
   isFFmpegLoaded: false,
   isFFmpegLoading: false,
   
   // Actions
+  setAudioOptions: (options) => set({ audioOptions: options }),
+  setVideoOptions: (options) => set({ videoOptions: options }),
+  setImageOptions: (options) => set({ imageOptions: options }),
+  setPdfOptions: (options) => set({ pdfOptions: options }),
   setIsCompressing: (isCompressing) => set({ isCompressing }),
   setIsProcessingAll: (isProcessingAll) => set({ isProcessingAll }),
   setCompressionProgress: (progress) => set({ compressionProgress: progress }),

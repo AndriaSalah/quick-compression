@@ -14,52 +14,49 @@ import { VideoSettings } from './settings/VideoSettings';
 import { AudioSettings } from './settings/AudioSettings';
 import { PdfSettings } from './settings/PdfSettings';
 import { CustomArgs } from './settings/CustomArgs';
+import { getSelectedFilesTypes } from '@/lib/utils/get-selected-files-types';
+import { useCompressionStore } from '@/store/compression-store';
 
 
 interface CompressionSettingsProps {
-  options: CompressionOptions;
-  onOptionsChange: (options: CompressionOptions) => void;
+
   selectedFiles: File[];
 }
 
-export function CompressionSettings({ options, onOptionsChange, selectedFiles }: CompressionSettingsProps) {
-  const [activeTab, setActiveTab] = useState('smart');
+export function CompressionSettings({ selectedFiles }: CompressionSettingsProps) {
+  const { audioOptions, videoOptions, imageOptions, pdfOptions,setAudioOptions,setVideoOptions,setImageOptions,setPdfOptions } = useCompressionStore();
+  const { hasImages, hasVideos, hasAudio, hasPdfs } = getSelectedFilesTypes(selectedFiles);
 
-  const hasImages = selectedFiles.some(file => file.type.startsWith('image/'));
-  const hasVideos = selectedFiles.some(file => file.type.startsWith('video/'));
-  const hasAudio = selectedFiles.some(file => file.type.startsWith('audio/'));
-  const hasPdfs = selectedFiles.some(file => file.type === 'application/pdf');
+  // // Apply smart defaults when files are selected
+  // useEffect(() => {
+  //   if (selectedFiles.length > 0) {
+  //     // Find the largest file to determine smart defaults
+  //     const largestFile = selectedFiles.reduce((largest, file) => 
+  //       file.size > largest.size ? file : largest
+  //     );
 
-  // Apply smart defaults when files are selected
-  useEffect(() => {
-    if (selectedFiles.length > 0) {
-      // Find the largest file to determine smart defaults
-      const largestFile = selectedFiles.reduce((largest, file) => 
-        file.size > largest.size ? file : largest
-      );
+  //     // Determine file type for smart defaults
+  //     let fileType = 'other';
+  //     if (largestFile.type.startsWith('image/')) fileType = 'image';
+  //     else if (largestFile.type.startsWith('video/')) fileType = 'video';
+  //     else if (largestFile.type.startsWith('audio/')) fileType = 'audio';
+  //     else if (largestFile.type === 'application/pdf') fileType = 'pdf';
 
-      // Determine file type for smart defaults
-      let fileType = 'other';
-      if (largestFile.type.startsWith('image/')) fileType = 'image';
-      else if (largestFile.type.startsWith('video/')) fileType = 'video';
-      else if (largestFile.type.startsWith('audio/')) fileType = 'audio';
-      else if (largestFile.type === 'application/pdf') fileType = 'pdf';
+  //     // Get smart defaults and apply them
+  //     const smartDefaults = getSmartDefaults(largestFile, fileType as any);
+  //     onOptionsChange({
+  //       ...options,
+  //       ...smartDefaults
+  //     });
+  //   }
+  // }, [selectedFiles]); // Only depend on selectedFiles, not options to avoid loops
 
-      // Get smart defaults and apply them
-      const smartDefaults = getSmartDefaults(largestFile, fileType as any);
-      onOptionsChange({
-        ...options,
-        ...smartDefaults
-      });
-    }
-  }, [selectedFiles]); // Only depend on selectedFiles, not options to avoid loops
-
-  const updateOption = (key: keyof CompressionOptions, value: any) => {
-    onOptionsChange({
-      ...options,
-      [key]: value,
-    });
-  };
+  // const updateOption = (key: keyof CompressionOptions, value: any) => {
+  //   onOptionsChange({
+  //     ...options,
+  //     [key]: value,
+  //   });
+  // };
 
   if (selectedFiles.length === 0) {
     return (
@@ -81,40 +78,40 @@ export function CompressionSettings({ options, onOptionsChange, selectedFiles }:
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="smart">Smart Presets</TabsTrigger>
+        <Tabs defaultValue='advanced'>
+          <TabsList className="grid w-full grid-cols-1">
+            {/* <TabsTrigger value="smart">Smart Presets</TabsTrigger> */}
             <TabsTrigger value="advanced">Advanced</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="smart" className="space-y-6 mt-4">
+          {/* <TabsContent value="smart" className="space-y-6 mt-4">
             <SmartPresets 
               options={options} 
               onOptionsChange={onOptionsChange} 
               selectedFiles={selectedFiles} 
             />
-          </TabsContent>
+          </TabsContent> */}
 
           <TabsContent value="advanced" className="space-y-6 mt-4">
             {/* File Type Specific Settings */}
             {/* Custom FFmpeg Arguments (only for video/audio) */}
-            {(hasVideos || hasAudio) && (
+            {/* {(hasVideos || hasAudio) && (
               <CustomArgs options={options} onOptionsChange={onOptionsChange} />
-            )}
+            )} */}
             {hasImages && (
-              <ImageSettings options={options} onOptionsChange={onOptionsChange} />
+              <ImageSettings options={imageOptions} onOptionsChange={setImageOptions} />
             )}
 
             {hasVideos && (
-              <VideoSettings options={options} onOptionsChange={onOptionsChange} />
+              <VideoSettings options={videoOptions} onOptionsChange={setVideoOptions} />
             )}
 
             {hasAudio && (
-              <AudioSettings options={options} onOptionsChange={onOptionsChange} />
+              <AudioSettings options={audioOptions} onOptionsChange={setAudioOptions} />
             )}
 
             {hasPdfs && (
-              <PdfSettings options={options} onOptionsChange={onOptionsChange} />
+              <PdfSettings options={pdfOptions} onOptionsChange={setPdfOptions} />
             )}
             {/* No file type selected message */}
             {!hasImages && !hasAudio && !hasVideos && !hasPdfs && (

@@ -12,12 +12,6 @@ import {
   Shield, 
   Globe, 
   Github,
-  Play,
-  Pause,
-  RotateCcw,
-  Download,
-  Loader2,
-  CheckCircle2,
   Clock,
   Coffee
 } from 'lucide-react';
@@ -54,16 +48,6 @@ export default function HomePage() {
     getCompletedFiles
   } = useFileStore();
   
-  const [compressionOptions, setCompressionOptions] = useState<CompressionOptions>({
-    quality: 0.8,
-    imageQuality: 0.7, // Default to "Web" preset (matches maxWidth/maxHeight)
-    maxWidth: 1920,
-    maxHeight: 1920,
-    bitrate: '128k',
-    sampleRate: '44100',
-    channels: 2,
-    preset: 'fast'
-  });
   const [isProcessingAll, setIsProcessingAll] = useState(false);
   const [currentProcessingFile, setCurrentProcessingFile] = useState<string | null>(null);
 
@@ -78,9 +62,8 @@ export default function HomePage() {
     error,
     isFFmpegLoaded,
     isFFmpegLoading,
-    manualInitialize,
     clearError
-  } = useCompression(compressionOptions);
+  } = useCompression();
 
   // Utility function for formatting file sizes
   // Now imported from utils/file-size-formatter.ts
@@ -117,13 +100,13 @@ export default function HomePage() {
       let compressedBlob: Blob;
 
       if (compressionType === 'image') {
-        compressedBlob = await compressImage(file, compressionOptions);
+        compressedBlob = await compressImage(file);
       } else if (compressionType === 'video') {
-        compressedBlob = await compressVideo(file, compressionOptions);
+        compressedBlob = await compressVideo(file);
       } else if (compressionType === 'audio') {
-        compressedBlob = await compressAudio(file, compressionOptions);
+        compressedBlob = await compressAudio(file);
       } else if (compressionType === 'pdf') {
-        compressedBlob = await compressPdf(file, compressionOptions);
+        compressedBlob = await compressPdf(file);
       } else {
         throw new Error('Unsupported file type');
       }
@@ -336,8 +319,6 @@ export default function HomePage() {
 
             {/* Compression Settings */}
             <CompressionSettings
-              options={compressionOptions}
-              onOptionsChange={setCompressionOptions}
               selectedFiles={selectedFiles}
             />
           </div>
@@ -379,28 +360,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Footer */}
-        <footer className="mt-16 py-8 border-t border-gray-700">
-          <div className="text-center text-gray-400">
-            <p className="mb-4">
-              Built with ❤️ using Next.js, FFmpeg WASM, and shadcn/ui
-            </p>
-            <div className="flex justify-center space-x-6 text-sm">
-              <span className="flex items-center space-x-1">
-                <Shield className="w-4 h-4" />
-                <span>No data leaves your device</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <Zap className="w-4 h-4" />
-                <span>Powered by WebAssembly</span>
-              </span>
-              <span className="flex items-center space-x-1">
-                <Globe className="w-4 h-4" />
-                <span>Works offline</span>
-              </span>
-            </div>
-          </div>
-        </footer>
       </main>
       
       {/* Toast Notifications */}

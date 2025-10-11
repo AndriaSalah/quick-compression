@@ -4,19 +4,20 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Music } from 'lucide-react';
-import { CompressionOptions } from '@/types';
+import { AudioCompressionOptions, CompressionOptions } from '@/types';
 
 interface AudioSettingsProps {
   options: CompressionOptions;
-  onOptionsChange: (options: CompressionOptions) => void;
+  onOptionsChange: (options: AudioCompressionOptions) => void;
 }
 
 export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) {
-  const updateOption = (key: keyof CompressionOptions, value: any) => {
+  const updateOption = (newOptions: AudioCompressionOptions) => {
     onOptionsChange({
       ...options,
-      [key]: value,
+      ...newOptions
     });
+    console.log('Updated options:', {...options, ...newOptions})
   };
 
   return (
@@ -27,11 +28,11 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
       </div>
 
       {/* Audio Codec */}
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label>Audio Codec</Label>
         <Select
           value={options.acodec || 'aac'}
-          onValueChange={(value) => updateOption('acodec', value)}
+          onValueChange={(value) => updateOption({ acodec: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select codec" />
@@ -43,14 +44,14 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
             <SelectItem value="vorbis">Vorbis (Open source)</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
 
       {/* Bitrate */}
       <div className="space-y-2">
         <Label>Bitrate</Label>
         <Select
           value={options.bitrate || '128k'}
-          onValueChange={(value) => updateOption('bitrate', value)}
+          onValueChange={(value) => updateOption({ bitrate: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select bitrate" />
@@ -72,7 +73,7 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
         <Label>Sample Rate</Label>
         <Select
           value={options.sampleRate || '44100'}
-          onValueChange={(value) => updateOption('sampleRate', value)}
+          onValueChange={(value) => updateOption({ sampleRate: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select sample rate" />
@@ -93,7 +94,7 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
         <Label>Channels</Label>
         <Select
           value={options.channels?.toString() || '2'}
-          onValueChange={(value) => updateOption('channels', parseInt(value))}
+          onValueChange={(value) => updateOption({ channels: parseInt(value) })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select channels" />
@@ -113,9 +114,11 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
         <div className="grid grid-cols-1 gap-2">
           <button
             onClick={() => {
-              updateOption('bitrate', '32k');
-              updateOption('sampleRate', '16000');
-              updateOption('channels', 1);
+              updateOption({
+                bitrate: '32k',
+                sampleRate: '16000',
+                channels: 1
+              });
             }}
             className={`p-3 text-left border rounded-lg transition-all duration-200 ${
               options.bitrate === '32k' && options.sampleRate === '16000' && options.channels === 1
@@ -129,9 +132,11 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
           
           <button
             onClick={() => {
-              updateOption('bitrate', '128k');
-              updateOption('sampleRate', '44100');
-              updateOption('channels', 2);
+              updateOption({
+                bitrate: '128k',
+                sampleRate: '44100',
+                channels: 2 
+              })
             }}
             className={`p-3 text-left border rounded-lg transition-all duration-200 ${
               options.bitrate === '128k' && options.sampleRate === '44100' && options.channels === 2
@@ -145,9 +150,11 @@ export function AudioSettings({ options, onOptionsChange }: AudioSettingsProps) 
           
           <button
             onClick={() => {
-              updateOption('bitrate', '192k');
-              updateOption('sampleRate', '44100');
-              updateOption('channels', 2);
+              updateOption({
+                bitrate: '192k',
+                sampleRate: '44100',
+                channels: 2
+              })
             }}
             className={`p-3 text-left border rounded-lg transition-all duration-200 ${
               options.bitrate === '192k' && options.sampleRate === '44100' && options.channels === 2

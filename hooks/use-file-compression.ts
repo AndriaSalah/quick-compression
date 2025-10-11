@@ -25,7 +25,7 @@ export const useFileCompression = () => {
   
   const { compressionOptions } = useSettingsStore();
   
-  const { compressImage, compressVideo, compressAudio } = useCompression(compressionOptions);
+  const { compressImage, compressVideo, compressAudio } = useCompression();
 
   const compressFile = useCallback(async (fileResult: FileResult) => {
     setCurrentProcessingFile(fileResult.originalFile.name);
@@ -48,11 +48,11 @@ export const useFileCompression = () => {
       const file = fileResult.originalFile;
 
       if (file.type.startsWith('image/')) {
-        compressedBlob = await compressImage(file, compressionOptions);
+        compressedBlob = await compressImage(file);
       } else if (file.type.startsWith('video/')) {
-        compressedBlob = await compressVideo(file, compressionOptions);
+        compressedBlob = await compressVideo(file);
       } else if (file.type.startsWith('audio/')) {
-        compressedBlob = await compressAudio(file, compressionOptions);
+        compressedBlob = await compressAudio(file);
       } else {
         throw new Error('Unsupported file type');
       }

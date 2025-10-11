@@ -3,7 +3,7 @@
  * Provides optimized command line arguments for different compression types
  */
 
-import { CompressionOptions } from '@/types';
+import { AudioCompressionOptions, CompressionOptions } from '@/types';
 import { getFFmpegThreadArgs } from '@/lib/threadUtils';
 
 /**
@@ -56,7 +56,7 @@ export const getOutputMimeType = (outputFormat: string, mediaType: 'audio' | 'vi
  * Builds FFmpeg arguments for audio compression with multithreading
  */
 export const buildAudioArgs = (
-  options: CompressionOptions,
+  options:AudioCompressionOptions,
   inputFileName: string,
   outputFileName: string
 ): string[] => {
@@ -64,7 +64,7 @@ export const buildAudioArgs = (
   
   // Add threading arguments for optimal performance
   const threadArgs = getFFmpegThreadArgs('audio');
-  args = args.concat(threadArgs);
+  // args = args.concat(threadArgs);
 
   // Use custom args if provided, otherwise build from options
   if (options.customArgs && options.customArgs.length > 0) {
@@ -73,39 +73,53 @@ export const buildAudioArgs = (
   } else {
     const outputFormat = options.outputFormat || 'mp3';
 
-    // Audio codec
-    if (options.acodec) {
-      args.push('-acodec', options.acodec);
-    } else {
-      args.push('-acodec', outputFormat === 'mp3' ? 'mp3' : 'aac');
+    // Format specification first (especially important for ogg container)
+    if (outputFormat === 'ogg') {
+      args.push('-f', 'ogg');
     }
 
-    // Bitrate
-    if (options.bitrate) {
-      args.push('-b:a', options.bitrate);
+    // Audio codec - normalize codec names
+    let codec = options.acodec;
+    if (codec === 'opus') codec = 'libopus';
+    if (codec === 'vorbis') codec = 'libvorbis';
+    
+    if (codec) {
+      args.push('-acodec', codec);
     } else {
-      args.push('-b:a', '32k');
+      args.push('-acodec', outputFormat === 'mp3' ? 'libmp3lame' : 'aac');
     }
 
     // Sample rate
     if (options.sampleRate) {
       args.push('-ar', options.sampleRate);
     } else {
-      args.push('-ar', '16000');
+      args.push('-ar', '44100');
     }
 
     // Channels
     if (options.channels !== undefined) {
       args.push('-ac', options.channels.toString());
     } else {
-      args.push('-ac', '1');
+      args.push('-ac', '2');
     }
 
-    // Audio filters for voice optimization
-    args.push('-af', 'highpass=f=80,lowpass=f=8000,volume=1.2');
-    
-    // Quality setting for smaller size
-    args.push('-q:a', '9');
+    // Codec-specific quality/bitrate settings
+    if (codec === 'libopus') {
+      // For Opus, use simpler settings that are more compatible with FFmpeg.wasm
+      args.push('-b:a', options.bitrate || '128k');
+      // Remove advanced Opus settings that might not be supported
+    } else if (codec === 'libvorbis') {
+      // For Vorbis, use quality-based encoding
+      args.push('-q:a', '5'); // Quality 5 is good for Vorbis (~160kbps)
+    } else {
+      // For other codecs (AAC, MP3), use bitrate
+      if (options.bitrate) {
+        args.push('-b:a', options.bitrate);
+      } else {
+        args.push('-b:a', '128k');
+      }
+    }
+    args.push('-y');
     args.push(outputFileName);
   }
 
@@ -152,9 +166,16 @@ export const buildVideoArgs = (
       args.push('-preset', 'ultrafast');
     }
 
+    // Video bitrate (if specified)
+    if (options.bitrate) {
+      args.push('-b:v', options.bitrate);
+    }
+
     // Scale/resolution
     if (options.scale) {
-      args.push('-vf', options.scale);
+      // Ensure scale is properly formatted for FFmpeg
+      const scaleValue = options.scale.includes('scale=') ? options.scale : `scale=${options.scale}`;
+      args.push('-vf', scaleValue);
     } else if (options.maxWidth) {
       args.push('-vf', `scale='min(${options.maxWidth},iw)':-2`);
     } else {
@@ -168,12 +189,8 @@ export const buildVideoArgs = (
       args.push('-acodec', 'aac');
     }
 
-    // Audio bitrate
-    if (options.bitrate) {
-      args.push('-b:a', options.bitrate);
-    } else {
-      args.push('-b:a', '48k');
-    }
+    // Audio bitrate (separate from video bitrate)
+    args.push('-b:a', '128k'); // Fixed audio bitrate for video compression
 
     // Optimization for web
     args.push('-movflags', '+faststart');

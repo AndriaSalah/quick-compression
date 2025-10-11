@@ -5,19 +5,20 @@ import { Slider } from '@/components/ui/slider';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Video } from 'lucide-react';
-import { CompressionOptions } from '@/types';
+import { CompressionOptions, VideoCompressionOptions } from '@/types';
 
 interface VideoSettingsProps {
-  options: CompressionOptions;
-  onOptionsChange: (options: CompressionOptions) => void;
+  options: VideoCompressionOptions;
+  onOptionsChange: (options: VideoCompressionOptions) => void;
 }
 
 export function VideoSettings({ options, onOptionsChange }: VideoSettingsProps) {
-  const updateOption = (key: keyof CompressionOptions, value: any) => {
+  const updateOption = (newOptions: VideoCompressionOptions) => {
     onOptionsChange({
       ...options,
-      [key]: value,
+      ...newOptions
     });
+    console.log('Updated options:', {...options, ...newOptions});
   };
 
   return (
@@ -28,11 +29,11 @@ export function VideoSettings({ options, onOptionsChange }: VideoSettingsProps) 
       </div>
 
       {/* Video Codec */}
-      <div className="space-y-2">
+      {/* <div className="space-y-2">
         <Label>Video Codec</Label>
         <Select
           value={options.vcodec || 'libx264'}
-          onValueChange={(value) => updateOption('vcodec', value)}
+          onValueChange={(value) => updateOption({ vcodec: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select codec" />
@@ -43,14 +44,14 @@ export function VideoSettings({ options, onOptionsChange }: VideoSettingsProps) 
             <SelectItem value="libvpx-vp9">VP9 - Open source, good compression</SelectItem>
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
 
       {/* Preset */}
       <div className="space-y-2">
         <Label>Encoding Speed</Label>
         <Select
           value={options.preset || 'medium'}
-          onValueChange={(value) => updateOption('preset', value)}
+          onValueChange={(value) => updateOption({ preset: value })}
         >
           <SelectTrigger>
             <SelectValue placeholder="Select preset" />
@@ -73,7 +74,7 @@ export function VideoSettings({ options, onOptionsChange }: VideoSettingsProps) 
         </div>
         <Slider
           value={[options.crf || 23]}
-          onValueChange={(value) => updateOption('crf', value[0])}
+          onValueChange={(value) => updateOption({ crf: value[0] })}
           max={51}
           min={0}
           step={1}
@@ -82,53 +83,25 @@ export function VideoSettings({ options, onOptionsChange }: VideoSettingsProps) 
         <p className="text-xs text-gray-500">Lower values = better quality, larger files. Recommended: 18-28</p>
       </div>
 
-      {/* Resolution */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Max Width (px)</Label>
-          <Input
-            type="number"
-            value={options.maxWidth || 1920}
-            onChange={(e) => updateOption('maxWidth', parseInt(e.target.value))}
-            min={320}
-            max={4096}
-            step={16}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label>Max Height (px)</Label>
-          <Input
-            type="number"
-            value={options.maxHeight || 1080}
-            onChange={(e) => updateOption('maxHeight', parseInt(e.target.value))}
-            min={240}
-            max={2160}
-            step={16}
-          />
-        </div>
-      </div>
-
-      {/* Scale Preset */}
+      {/* Resolution Preset */}
       <div className="space-y-2">
         <Label>Resolution Preset</Label>
         <Select
-          value={options.scale || 'original'}
+          value={(() => {
+            if (options.maxWidth === 1920 && options.maxHeight === 1080) return '1080p';
+            if (options.maxWidth === 1280 && options.maxHeight === 720) return '720p';
+            if (options.maxWidth === 2560 && options.maxHeight === 1440) return '1440p';
+            if (options.maxWidth === 3840 && options.maxHeight === 2160) return '4k';
+            if (!options.maxWidth && !options.maxHeight) return 'original';
+            return 'custom';
+          })()}
           onValueChange={(value) => {
-            updateOption('scale', value);
-            // Set dimensions based on preset
-            if (value === '720p') {
-              updateOption('maxWidth', 1280);
-              updateOption('maxHeight', 720);
-            } else if (value === '1080p') {
-              updateOption('maxWidth', 1920);
-              updateOption('maxHeight', 1080);
-            } else if (value === '1440p') {
-              updateOption('maxWidth', 2560);
-              updateOption('maxHeight', 1440);
-            } else if (value === '4k') {
-              updateOption('maxWidth', 3840);
-              updateOption('maxHeight', 2160);
-            }
+            if (value === '1080p') updateOption({ maxWidth: 1920, maxHeight: 1080, scale: 'scale=1920:1080' });
+            else if (value === '720p') updateOption({ maxWidth: 1280, maxHeight: 720, scale: 'scale=1280:720' });
+            else if (value === '1440p') updateOption({ maxWidth: 2560, maxHeight: 1440, scale: 'scale=2560:1440' });
+            else if (value === '4k') updateOption({ maxWidth: 3840, maxHeight: 2160, scale: 'scale=3840:2160' });
+            else if (value === 'original') updateOption({ maxWidth: undefined, maxHeight: undefined, scale: undefined });
+            else updateOption({});
           }}
         >
           <SelectTrigger>
@@ -142,6 +115,44 @@ export function VideoSettings({ options, onOptionsChange }: VideoSettingsProps) 
             <SelectItem value="4k">4K (3840x2160)</SelectItem>
           </SelectContent>
         </Select>
+        {(() => {
+          const preset = [
+            { w: 1920, h: 1080 },
+            { w: 1280, h: 720 },
+            { w: 2560, h: 1440 },
+            { w: 3840, h: 2160 }
+          ];
+          const isCustom = !preset.some(p => p.w === options.maxWidth && p.h === options.maxHeight) && (options.maxWidth || options.maxHeight);
+          if (isCustom) {
+            return (
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="space-y-2">
+                  <Label>Max Width (px)</Label>
+                  <Input
+                    type="number"
+                    value={options.maxWidth || ''}
+                    onChange={(e) => updateOption({ maxWidth: parseInt(e.target.value) })}
+                    min={320}
+                    max={4096}
+                    step={16}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Max Height (px)</Label>
+                  <Input
+                    type="number"
+                    value={options.maxHeight || ''}
+                    onChange={(e) => updateOption({ maxHeight: parseInt(e.target.value) })}
+                    min={240}
+                    max={2160}
+                    step={16}
+                  />
+                </div>
+              </div>
+            );
+          }
+          return null;
+        })()}
       </div>
     </div>
   );

@@ -2,31 +2,27 @@
 
 import { useCallback } from 'react';
 import { PDFDocument, PDFName } from 'pdf-lib';
-import { CompressionOptions } from '@/types';
+import { PdfCompressionOptions } from '@/types';
 import { formatFileSizeMB, calculateCompressionStats } from '@/utils/compression-helpers';
-import { getSmartDefaults } from '@/utils/compression-defaults';
 import { useFFmpeg } from './useFFmpeg';
+import { useCompressionStore } from '@/store/compression-store';
 
-export const usePdfCompression = (defaultOptions: CompressionOptions = {}) => {
+export const usePdfCompression = () => {
   const {
     setCompressionProgress,
     clearError
   } = useFFmpeg();
+  const { pdfOptions } = useCompressionStore();
 
   const compressPdf = useCallback(async (
     file: File,
-    customOptions: CompressionOptions = {}
   ): Promise<Blob> => {
     clearError();
     setCompressionProgress(0);
 
     try {
-      // Merge options with smart defaults
-      const options = {
-        ...getSmartDefaults(file, 'pdf'),
-        ...defaultOptions,
-        ...customOptions
-      };
+      // Use PDF options from store
+      const options = pdfOptions;
 
       console.log('Starting PDF compression with pdf-lib...', { fileName: file.name, options });
 
@@ -283,7 +279,7 @@ export const usePdfCompression = (defaultOptions: CompressionOptions = {}) => {
       // Reset progress after completion
       setTimeout(() => setCompressionProgress(null), 1000);
     }
-  }, [defaultOptions, setCompressionProgress, clearError]);
+  }, [pdfOptions, setCompressionProgress, clearError]);
 
   return {
     compressPdf

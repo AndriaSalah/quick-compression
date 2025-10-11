@@ -8,8 +8,9 @@ import { useVideoCompression } from './useVideoCompression';
 import { useImageCompression } from './useImageCompression';
 import { usePdfCompression } from './usePdfCompression';
 import { CompressionQueue, getOptimalThreadConfig, getThreadConfigInfo } from './threadUtils';
+import { useCompressionStore } from '@/store/compression-store';
 
-export const useCompression = (defaultOptions: CompressionOptions = {}) => {
+export const useCompression = () => {
   // Use FFmpeg hook for state management
   const {
     isFFmpegLoaded,
@@ -20,15 +21,17 @@ export const useCompression = (defaultOptions: CompressionOptions = {}) => {
     clearError
   } = useFFmpeg();
 
+  const {audioOptions, videoOptions, imageOptions, pdfOptions} = useCompressionStore()
+
   // Threading and queue state
   const [compressionQueue] = useState(() => new CompressionQueue());
   const [threadConfig] = useState(() => getOptimalThreadConfig());
 
   // Specialized compression hooks
-  const { compressAudio } = useAudioCompression(defaultOptions);
-  const { compressVideo } = useVideoCompression(defaultOptions);
-  const { compressImage } = useImageCompression(defaultOptions);
-  const { compressPdf } = usePdfCompression(defaultOptions);
+  const { compressAudio } = useAudioCompression();
+  const { compressVideo } = useVideoCompression();
+  const { compressImage } = useImageCompression();
+  const { compressPdf } = usePdfCompression();
 
   // UI state
   const [isCompressing, setIsCompressing] = useState(false);
@@ -37,10 +40,10 @@ export const useCompression = (defaultOptions: CompressionOptions = {}) => {
   const [batchProgress, setBatchProgress] = useState<{ completed: number; total: number } | null>(null);
 
   // Wrapper functions that handle common state management
-  const handleAudioCompression = async (file: File, customOptions: CompressionOptions = {}): Promise<Blob> => {
+  const handleAudioCompression = async (file: File): Promise<Blob> => {
     setIsCompressing(true);
     try {
-      const result = await compressAudio(file, customOptions);
+      const result = await compressAudio(file);
       // Note: stats are already logged in the specialized hook
       return result;
     } finally {
@@ -48,10 +51,10 @@ export const useCompression = (defaultOptions: CompressionOptions = {}) => {
     }
   };
 
-  const handleVideoCompression = async (file: File, customOptions: CompressionOptions = {}): Promise<Blob> => {
+  const handleVideoCompression = async (file: File): Promise<Blob> => {
     setIsCompressing(true);
     try {
-      const result = await compressVideo(file, customOptions);
+      const result = await compressVideo(file);
       // Note: stats are already logged in the specialized hook
       return result;
     } finally {
@@ -59,10 +62,10 @@ export const useCompression = (defaultOptions: CompressionOptions = {}) => {
     }
   };
 
-  const handleImageCompression = async (file: File, customOptions: CompressionOptions = {}): Promise<Blob> => {
+  const handleImageCompression = async (file: File): Promise<Blob> => {
     setIsCompressing(true);
     try {
-      const result = await compressImage(file, customOptions);
+      const result = await compressImage(file);
       // Note: stats are already logged in the specialized hook
       return result;
     } finally {
@@ -73,7 +76,7 @@ export const useCompression = (defaultOptions: CompressionOptions = {}) => {
   const handlePdfCompression = async (file: File, customOptions: CompressionOptions = {}): Promise<Blob> => {
     setIsCompressing(true);
     try {
-      const result = await compressPdf(file, customOptions);
+      const result = await compressPdf(file);
       // Note: stats are already logged in the specialized hook
       return result;
     } finally {
@@ -106,13 +109,13 @@ export const useCompression = (defaultOptions: CompressionOptions = {}) => {
           const fileName = file.name.toLowerCase();
           
           if (fileName.match(/\.(mp3|wav|ogg|aac|m4a|flac|wma)$/)) {
-            return await compressAudio(file, customOptions);
+            return await compressAudio(file);
           } else if (fileName.match(/\.(mp4|avi|mkv|webm|mov|wmv|flv|3gp)$/)) {
-            return await compressVideo(file, customOptions);
+            return await compressVideo(file);
           } else if (fileName.match(/\.(jpg|jpeg|png|webp|gif|bmp|tiff|avif)$/)) {
-            return await compressImage(file, customOptions);
+            return await compressImage(file);
           } else if (fileName.match(/\.pdf$/)) {
-            return await compressPdf(file, customOptions);
+            return await compressPdf(file);
           } else {
             throw new Error(`Unsupported file type: ${file.name}`);
           }

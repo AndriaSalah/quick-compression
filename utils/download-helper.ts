@@ -19,6 +19,7 @@ export function downloadSingleFile(
   a.href = url;
   
   // Determine output format from blob MIME type if not provided
+  console.log('Blob MIME type:', blob.type);
   const detectedFormat = outputFormat || detectFormatFromMimeType(blob.type);
   
   a.download = generateFileName(originalFileName, suffix, detectedFormat);

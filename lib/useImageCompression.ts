@@ -1,29 +1,32 @@
 "use client"
 
 import { useCallback } from 'react';
-import { CompressionOptions } from '@/types';
+import { CompressionOptions, ImageCompressionOptions } from '@/types';
 import { formatFileSizeMB, calculateNewDimensions, calculateCompressionStats } from '@/utils/compression-helpers';
 import { useFFmpeg } from './useFFmpeg';
+import { useCompressionStore } from '@/store/compression-store';
 
-export const useImageCompression = (defaultOptions: CompressionOptions = {}) => {
+const mimeMap: Record<string, string> = {
+  jpeg: 'image/jpeg',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  webp: 'image/webp',
+  avif: 'image/avif',
+  bmp: 'image/bmp',
+};
+
+export const useImageCompression = () => {
   const { setCompressionProgress, clearError } = useFFmpeg();
+  const {imageOptions} = useCompressionStore()
 
   const compressImage = useCallback(async (
     file: File,
-    customOptions: CompressionOptions = {}
   ): Promise<Blob> => {
     clearError();
     setCompressionProgress(0);
 
     try {
-      const options = {
-        maxWidth: 1920,
-        maxHeight: 1920,
-        imageQuality: 0.8,
-        outputFormat: 'jpeg',
-        ...defaultOptions,
-        ...customOptions
-      };
+      
 
       console.log('Starting image compression...');
 
@@ -40,8 +43,8 @@ export const useImageCompression = (defaultOptions: CompressionOptions = {}) => 
           const { width, height } = calculateNewDimensions(
             img.width,
             img.height,
-            options.maxWidth!,
-            options.maxHeight!
+            imageOptions.maxWidth!,
+            imageOptions.maxHeight!
           );
 
           canvas.width = width;
@@ -54,8 +57,8 @@ export const useImageCompression = (defaultOptions: CompressionOptions = {}) => 
 
           setCompressionProgress(75);
 
-          const outputType = options.outputFormat === 'png' ? 'image/png' : 'image/jpeg';
-          const quality = options.imageQuality || 0.8;
+          const outputType = imageOptions.outputFormat ? mimeMap[imageOptions.outputFormat] : 'image/jpeg';
+          const quality = imageOptions.imageQuality || 0.8;
 
           canvas.toBlob((blob) => {
             if (blob) {
@@ -87,7 +90,7 @@ export const useImageCompression = (defaultOptions: CompressionOptions = {}) => 
       const errorMessage = `Image compression failed: ${err instanceof Error ? err.message : 'Unknown error'}`;
       throw new Error(errorMessage);
     }
-  }, [defaultOptions, setCompressionProgress, clearError]);
+  }, [imageOptions, setCompressionProgress, clearError]);
 
   return {
     compressImage
