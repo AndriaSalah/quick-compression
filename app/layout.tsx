@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Quick Compression - Free File Compression Tool",
-  description: "Compress images, videos, audio files, and PDFs directly in your browser. No uploads, completely private, and open source.",
-  keywords: ["file compression", "image compression", "video compression", "PDF compression", "audio compression", "free", "online", "privacy"],
-  authors: [{ name: "Quick Compression Team" }],
+  description: "Compress images, videos, audio files directly in your browser. No uploads, completely private, and open source.",
+  keywords: ["file compression", "image compression", "video compression", "quick compression", "audio compression", "free", "online", "privacy"],
+  authors: [{ name: "Andria Salah" }],
   creator: "Quick Compression",
   publisher: "Quick Compression",
   formatDetection: {
