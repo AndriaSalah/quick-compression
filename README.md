@@ -1,5 +1,7 @@
 # Quick Compression - Developer Guide
 
+[![gitcgr](https://gitcgr.com/badge/AndriaSalah/quick-compression.svg)](https://gitcgr.com/AndriaSalah/quick-compression)
+
 Quick Compression is an open-source, modular file compression and conversion tool built with Next.js, TypeScript, and FFmpeg. It supports audio, video, and image compression with format conversion capabilities, all processed locally in your browser for privacy—no files are uploaded to a server. The app features real-time progress tracking, detailed error handling, and a modern UI for selecting compression and conversion options.
 
 ## Recent Updates
