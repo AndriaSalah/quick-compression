@@ -68,6 +68,8 @@ export function ImageSettings({ options, onOptionsChange }: ImageSettingsProps) 
         <Label>Resolution Preset</Label>
         <Select
           value={(() => {
+            if (options.maxWidth === 3840 && options.maxHeight === 2160) return '4k';
+            if (options.maxWidth === 2560 && options.maxHeight === 1440) return '2k';
             if (options.maxWidth === 1920 && options.maxHeight === 1080) return '1080p';
             if (options.maxWidth === 1280 && options.maxHeight === 720) return '720p';
             if (options.maxWidth === 854 && options.maxHeight === 480) return '480p';
@@ -75,7 +77,9 @@ export function ImageSettings({ options, onOptionsChange }: ImageSettingsProps) 
             return 'custom';
           })()}
           onValueChange={(value) => {
-            if (value === '1080p') updateOption({ maxWidth: 1920, maxHeight: 1080 });
+            if (value === '4k') updateOption({ maxWidth: 3840, maxHeight: 2160 });
+            else if (value === '2k') updateOption({ maxWidth: 2560, maxHeight: 1440 });
+            else if (value === '1080p') updateOption({ maxWidth: 1920, maxHeight: 1080 });
             else if (value === '720p') updateOption({ maxWidth: 1280, maxHeight: 720 });
             else if (value === '480p') updateOption({ maxWidth: 854, maxHeight: 480 });
             else if (value === '240p') updateOption({ maxWidth: 426, maxHeight: 240 });
@@ -86,6 +90,8 @@ export function ImageSettings({ options, onOptionsChange }: ImageSettingsProps) 
             <SelectValue placeholder="Select resolution" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="4k">4K (3840x2160)</SelectItem>
+            <SelectItem value="2k">2K (2560x1440)</SelectItem>
             <SelectItem value="1080p">1080p (1920x1080)</SelectItem>
             <SelectItem value="720p">720p (1280x720)</SelectItem>
             <SelectItem value="480p">480p (854x480)</SelectItem>
@@ -94,6 +100,8 @@ export function ImageSettings({ options, onOptionsChange }: ImageSettingsProps) 
         </Select>
         {(() => {
           const preset = [
+            { w: 3840, h: 2160 },
+            { w: 2560, h: 1440 },
             { w: 1920, h: 1080 },
             { w: 1280, h: 720 },
             { w: 854, h: 480 },
